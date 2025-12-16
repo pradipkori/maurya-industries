@@ -1,0 +1,261 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================= */
+/* Admin Input Styling */
+/* ============================= */
+
+.input {
+  @apply w-full border border-border rounded-lg px-4 py-2
+         focus:outline-none focus:ring-2 focus:ring-primary
+         bg-background text-foreground;
+}
+
+
+@layer base {
+  :root {
+    /* Industrial Color Palette */
+    --background: 210 20% 98%;
+    --foreground: 215 28% 17%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 215 28% 17%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 28% 17%;
+
+    /* Industrial Blue - Primary */
+    --primary: 213 56% 24%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Steel Cyan - Secondary */
+    --secondary: 207 90% 54%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* Light Blue Muted */
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    /* Accent - Steel */
+    --accent: 214 14% 66%;
+    --accent-foreground: 215 28% 17%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 20% 88%;
+    --input: 214 20% 88%;
+    --ring: 213 56% 24%;
+
+    --radius: 0.5rem;
+
+    /* Custom Industrial Colors */
+    --steel: 214 14% 46%;
+    --steel-light: 214 14% 76%;
+    --steel-dark: 214 14% 26%;
+    --industrial-blue: 213 56% 24%;
+    --industrial-blue-light: 207 90% 54%;
+    --industrial-blue-dark: 213 56% 16%;
+    --cyan-accent: 192 91% 48%;
+
+    /* Gradients */
+    --gradient-industrial: linear-gradient(135deg, hsl(213 56% 24%) 0%, hsl(207 90% 54%) 100%);
+    --gradient-steel: linear-gradient(135deg, hsl(214 14% 46%) 0%, hsl(214 14% 66%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(213 56% 16% / 0.95) 0%, hsl(213 56% 24% / 0.85) 100%);
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(214 14% 26% / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(214 14% 26% / 0.1), 0 2px 4px -2px hsl(214 14% 26% / 0.1);
+    --shadow-lg: 0 10px 15px -3px hsl(214 14% 26% / 0.1), 0 4px 6px -4px hsl(214 14% 26% / 0.1);
+    --shadow-xl: 0 20px 25px -5px hsl(214 14% 26% / 0.1), 0 8px 10px -6px hsl(214 14% 26% / 0.1);
+    --shadow-industrial: 0 10px 40px -10px hsl(213 56% 24% / 0.3);
+
+    /* Sidebar */
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 215 28% 10%;
+    --foreground: 210 20% 98%;
+
+    --card: 215 28% 14%;
+    --card-foreground: 210 20% 98%;
+
+    --popover: 215 28% 14%;
+    --popover-foreground: 210 20% 98%;
+
+    --primary: 207 90% 54%;
+    --primary-foreground: 215 28% 10%;
+
+    --secondary: 213 56% 34%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 215 28% 20%;
+    --muted-foreground: 214 14% 66%;
+
+    --accent: 214 14% 36%;
+    --accent-foreground: 210 20% 98%;
+
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 215 28% 20%;
+    --input: 215 28% 20%;
+    --ring: 207 90% 54%;
+
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Open Sans', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Montserrat', sans-serif;
+  }
+}
+
+@layer components {
+  .container-industrial {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-padding {
+    @apply py-16 md:py-24;
+  }
+
+  .diagonal-section {
+    clip-path: polygon(0 0, 100% 5%, 100% 100%, 0 95%);
+  }
+
+  .diagonal-section-reverse {
+    clip-path: polygon(0 5%, 100% 0, 100% 95%, 0 100%);
+  }
+
+  .text-gradient-industrial {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--gradient-industrial);
+  }
+
+  .btn-industrial {
+    @apply inline-flex items-center justify-center px-6 py-3 text-sm font-semibold uppercase tracking-wider transition-all duration-300;
+    @apply bg-primary text-primary-foreground hover:bg-industrial-blue-dark;
+    @apply shadow-md hover:shadow-industrial;
+  }
+
+  .btn-industrial-outline {
+    @apply inline-flex items-center justify-center px-6 py-3 text-sm font-semibold uppercase tracking-wider transition-all duration-300;
+    @apply border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground;
+  }
+
+  .card-industrial {
+    @apply bg-card rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300;
+    @apply border border-border;
+  }
+
+  .highlight-box {
+    @apply relative pl-4 border-l-4 border-secondary;
+  }
+}
+
+@layer utilities {
+  .bg-industrial-blue {
+    background-color: hsl(var(--industrial-blue));
+  }
+
+  .bg-industrial-blue-light {
+    background-color: hsl(var(--industrial-blue-light));
+  }
+
+  .bg-industrial-blue-dark {
+    background-color: hsl(var(--industrial-blue-dark));
+  }
+
+  .bg-steel {
+    background-color: hsl(var(--steel));
+  }
+
+  .bg-steel-light {
+    background-color: hsl(var(--steel-light));
+  }
+
+  .text-industrial-blue {
+    color: hsl(var(--industrial-blue));
+  }
+
+  .text-industrial-blue-light {
+    color: hsl(var(--industrial-blue-light));
+  }
+
+  .text-steel {
+    color: hsl(var(--steel));
+  }
+
+  .gradient-industrial {
+    background: var(--gradient-industrial);
+  }
+
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  .gradient-steel {
+    background: var(--gradient-steel);
+  }
+
+  .shadow-industrial {
+    box-shadow: var(--shadow-industrial);
+  }
+
+  .animate-fade-up {
+    animation: fadeUp 0.6s ease-out forwards;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
+  }
+
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
