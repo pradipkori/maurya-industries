@@ -41,6 +41,12 @@ const productSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+
+    // Price
+    price: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );
