@@ -11,11 +11,11 @@ const values = [
 ];
 
 const milestones = [
-  { year: '2013', title: 'Company Founded', description: 'Maurya Industries was established in Palghar, Maharashtra.' },
+  { year: '2003', title: 'Company Founded', description: 'Maurya Industries was established in Palghar, Maharashtra.' },
   { year: '2015', title: 'First 100 Machines', description: 'Successfully delivered our first 100 plastic granulator machines.' },
   { year: '2018', title: 'ISO Certification', description: 'Achieved ISO certification for quality management.' },
   { year: '2020', title: 'Pan-India Presence', description: 'Expanded operations to serve clients across India.' },
-  { year: '2023', title: '500+ Machines', description: 'Crossed the milestone of 500+ machines delivered.' },
+  { year: '2025', title: '250+ Machines', description: 'Crossed the milestone of 200+ machines delivered.' },
 ];
 
 export default function About() {
@@ -43,7 +43,7 @@ export default function About() {
               About Us
             </span>
             <h1 className="font-heading font-bold text-4xl md:text-5xl text-primary-foreground mt-2 mb-6">
-              Engineering Excellence Since 2013
+              Engineering Excellence Since 2003
             </h1>
             <p className="text-xl text-primary-foreground/80">
               A decade of delivering high-quality plastic granulator machines and industrial solutions.
@@ -67,7 +67,7 @@ export default function About() {
               <div className="space-y-4 text-muted-foreground">
                 <p>
                   Maurya Industries is a premier manufacturer of Plastic Granulator Machines and industrial
-                  machinery, headquartered in Palghar, Maharashtra, India. Founded in 2013, we have grown
+                  machinery, headquartered in Palghar, Maharashtra, India. Founded in 2003, we have grown
                   to become one of the most trusted names in the plastic processing machinery industry.
                 </p>
                 <p>
@@ -254,7 +254,7 @@ export default function About() {
 
 const _toggleStats = [
   { value: '20+', label: 'Years Experience' },
-  { value: '200+', label: 'Machines Delivered' },
-  { value: '200+', label: 'Happy Clients' },
+  { value: '250+', label: 'Machines Delivered' },
+  { value: '250+', label: 'Happy Clients' },
   { value: '24/7', label: 'Support Available' },
 ];

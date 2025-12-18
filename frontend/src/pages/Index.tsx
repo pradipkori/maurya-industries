@@ -77,7 +77,7 @@ export default function Index() {
             
             <p className="text-xl text-primary-foreground/80 mb-8 leading-relaxed">
               Leading manufacturer of Plastic Granulator Machines and industrial machinery. 
-              Delivering excellence in engineering for over 10 years.
+              Delivering excellence in engineering for over 20 years.
             </p>
             
             <div className="flex flex-wrap gap-4">
@@ -196,7 +196,7 @@ export default function Index() {
             >
               <span className="text-secondary font-heading font-semibold text-sm uppercase tracking-wider">About Us</span>
               <h2 className="font-heading font-bold text-3xl md:text-4xl text-foreground mt-2 mb-6">
-                10+ Years of Excellence in Engineering
+                20+ Years of Excellence in Engineering
               </h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>

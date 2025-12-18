@@ -196,7 +196,7 @@ export default function Services() {
               viewport={{ once: true }}
             >
               {[
-                { value: '10+', label: 'Years Experience' },
+                { value: '20+', label: 'Years Experience' },
                 { value: '500+', label: 'Machines Delivered' },
                 { value: '200+', label: 'Happy Clients' },
                 { value: '24/7', label: 'Support' },
