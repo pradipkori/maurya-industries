@@ -14,8 +14,9 @@ export default function AdminLogin() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // ✅ CLEAR FIELDS ON PAGE LOAD / REFRESH
+  // 🔥 FORCE LOGOUT WHEN LOGIN PAGE OPENS
   useEffect(() => {
+    localStorage.removeItem("adminToken");
     setEmail("");
     setPassword("");
     setError("");
@@ -53,33 +54,27 @@ export default function AdminLogin() {
       <div className="flex justify-center items-center py-20">
         <form
           onSubmit={handleLogin}
-          autoComplete="off"   // ✅ DISABLE BROWSER AUTOFILL
+          autoComplete="off"
           className="bg-card p-8 rounded-lg shadow w-full max-w-md border"
         >
           <h2 className="text-2xl font-bold mb-6 text-center">
             Admin Login
           </h2>
 
-          {/* Email */}
           <Input
             type="email"
-            name="admin-email"
             placeholder="Admin Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            autoComplete="off"
             required
           />
 
-          {/* Password */}
           <div className="relative mt-4">
             <Input
               type={showPassword ? "text" : "password"}
-              name="admin-password"
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              autoComplete="new-password"
               required
             />
 
@@ -88,11 +83,7 @@ export default function AdminLogin() {
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
               onClick={() => setShowPassword(!showPassword)}
             >
-              {showPassword ? (
-                <EyeOff className="w-4 h-4" />
-              ) : (
-                <Eye className="w-4 h-4" />
-              )}
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
           </div>
 
@@ -105,7 +96,6 @@ export default function AdminLogin() {
           <Button
             type="submit"
             className="w-full mt-6"
-            variant="industrial"
             disabled={loading}
           >
             {loading ? "Logging in..." : "Login"}

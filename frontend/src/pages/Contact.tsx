@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +10,7 @@ import {
   Clock,
   Send,
   CheckCircle,
+  Navigation,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -30,11 +30,24 @@ export default function Contact() {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!formData.name || !formData.email || !formData.subject || !formData.message) {
+      toast({
+        title: "Missing Fields",
+        description: "Please fill all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -53,8 +66,7 @@ export default function Contact() {
 
       toast({
         title: "Inquiry Submitted!",
-        description:
-          "Thank you for your inquiry. We will get back to you within 24 hours.",
+        description: "Our team will contact you within 24 hours.",
       });
 
       setFormData({
@@ -65,10 +77,10 @@ export default function Contact() {
         subject: "",
         message: "",
       });
-    } catch (error) {
+    } catch {
       toast({
         title: "Submission Failed",
-        description: "Something went wrong. Please try again later.",
+        description: "Please try again later.",
         variant: "destructive",
       });
     } finally {
@@ -77,9 +89,9 @@ export default function Contact() {
   };
 
   return (
-    <Layout>
-      {/* Hero Section */}
-      <section className="bg-primary py-16 -mt-32 md:-mt-40 pt-48 md:pt-56">
+    <>
+      {/* HERO */}
+      <section className="bg-primary py-16">
         <div className="container-industrial">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -93,135 +105,157 @@ export default function Contact() {
               Get in Touch
             </h1>
             <p className="text-xl text-primary-foreground/80 max-w-2xl">
-              Have questions about our products or services? We're here to help.
+              For quotations, product details, or technical support.
             </p>
           </motion.div>
         </div>
       </section>
 
-      {/* Contact Section */}
+      {/* CONTENT */}
       <section className="section-padding bg-background">
-        <div className="container-industrial">
-          <div className="grid lg:grid-cols-3 gap-12">
-            {/* Contact Info */}
-            <div className="space-y-8">
-              <h2 className="font-heading font-bold text-2xl">
-                Contact Information
-              </h2>
+        <div className="container-industrial grid lg:grid-cols-2 gap-14">
+          {/* LEFT */}
+          <div className="space-y-8">
+            <h2 className="font-heading font-bold text-3xl">
+              Contact Information
+            </h2>
 
-              <Info icon={<MapPin />} title="Address">
-                Gala No. 1, Amarnath Industrial Estate, Vasai (E), Palghar – 401208
-              </Info>
+            <Info icon={<MapPin />} title="Address">
+              Gala No. 1, Amarnath Industrial Estate, Vasai (E), Palghar – 401208
+            </Info>
 
-              <Info icon={<Phone />} title="Phone">
+            <Info icon={<Phone />} title="Phone">
+              <a href="tel:+919876543210" className="hover:text-primary">
                 +91 98765 43210
-              </Info>
+              </a>
+            </Info>
 
-              <Info icon={<Mail />} title="Email">
+            <Info icon={<Mail />} title="Email">
+              <a
+                href="mailto:info@mauryaindustries.com"
+                className="hover:text-primary"
+              >
                 info@mauryaindustries.com
-              </Info>
+              </a>
+            </Info>
 
-              <Info icon={<Clock />} title="Business Hours">
-                Mon–Sat: 9 AM – 6 PM
-              </Info>
+            <Info icon={<Clock />} title="Business Hours">
+              Mon – Sat : 9:00 AM – 6:00 PM
+            </Info>
+
+            {/* MAP */}
+            <div className="rounded-xl overflow-hidden border shadow-md">
+              <iframe
+                title="Maurya Industries Location"
+                src="https://www.google.com/maps?q=Amarnath%20Industrial%20Estate%20Vasai%20East&output=embed"
+                className="w-full h-72"
+                loading="lazy"
+              />
             </div>
 
-            {/* Contact Form */}
-            <motion.div
-              className="lg:col-span-2 bg-card rounded-lg shadow-lg p-8 border"
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-            >
-              <h2 className="font-heading font-bold text-2xl mb-6">
-                Send Us a Message
-              </h2>
+            <Button variant="outline" className="w-full" asChild>
+              <a
+                href="https://www.google.com/maps/dir/?api=1&destination=Amarnath+Industrial+Estate+Vasai+East"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Navigation className="mr-2 w-4 h-4" />
+                Get Directions
+              </a>
+            </Button>
+          </div>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <InputField
-                    label="Your Name *"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                  />
-                  <InputField
-                    label="Email Address *"
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
+          {/* RIGHT – CONTACT FORM (RESTORED ✅) */}
+          <div className="bg-card rounded-2xl shadow-xl p-8 border">
+            <h2 className="font-heading font-bold text-2xl mb-6">
+              Send Us a Message
+            </h2>
 
-                <div className="grid md:grid-cols-2 gap-6">
-                  <InputField
-                    label="Phone Number"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                  />
-                  <InputField
-                    label="Company Name"
-                    name="company"
-                    value={formData.company}
-                    onChange={handleChange}
-                  />
-                </div>
-
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
                 <InputField
-                  label="Subject *"
-                  name="subject"
-                  value={formData.subject}
+                  label="Your Name *"
+                  name="name"
+                  value={formData.name}
                   onChange={handleChange}
-                  required
                 />
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Your Message *
-                  </label>
-                  <Textarea
-                    name="message"
-                    value={formData.message}
-                    onChange={handleChange}
-                    rows={6}
-                    required
-                  />
-                </div>
-
-                <Button
-                  type="submit"
-                  variant="industrial"
-                  size="lg"
-                  disabled={isSubmitting}
-                >
-                  <Send className="mr-2 w-5 h-5" />
-                  {isSubmitting ? "Sending..." : "Send Message"}
-                </Button>
-              </form>
-
-              <div className="mt-8 pt-8 border-t">
-                {["Quick Response", "No Obligation Quote", "Expert Consultation"].map(
-                  (item) => (
-                    <div key={item} className="flex items-center gap-2 text-muted-foreground">
-                      <CheckCircle className="w-4 h-4 text-secondary" />
-                      {item}
-                    </div>
-                  )
-                )}
+                <InputField
+                  label="Email Address *"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                />
               </div>
-            </motion.div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                <InputField
+                  label="Phone Number"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                />
+                <InputField
+                  label="Company Name"
+                  name="company"
+                  value={formData.company}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <InputField
+                label="Subject *"
+                name="subject"
+                value={formData.subject}
+                onChange={handleChange}
+              />
+
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Your Message *
+                </label>
+                <Textarea
+                  name="message"
+                  rows={6}
+                  value={formData.message}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <Button
+                type="submit"
+                variant="industrial"
+                size="lg"
+                disabled={isSubmitting}
+                className="w-full"
+              >
+                <Send className="mr-2 w-5 h-5" />
+                {isSubmitting ? "Sending..." : "Send Message"}
+              </Button>
+            </form>
+
+            <div className="mt-8 pt-6 border-t space-y-2">
+              {["Quick Response", "No Obligation Quote", "Expert Consultation"].map(
+                (item) => (
+                  <div
+                    key={item}
+                    className="flex items-center gap-2 text-muted-foreground"
+                  >
+                    <CheckCircle className="w-4 h-4 text-secondary" />
+                    {item}
+                  </div>
+                )
+              )}
+            </div>
           </div>
         </div>
       </section>
-    </Layout>
+    </>
   );
 }
 
-// 🔹 Small helpers
+/* ---------------- HELPERS ---------------- */
+
 function Info({
   icon,
   title,

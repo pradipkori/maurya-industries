@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Layout } from '@/components/layout/Layout';
 import { Shield, Zap, Clock, Lightbulb, Award, ChevronRight, ArrowRight, Phone } from 'lucide-react';
 import heroImage from '@/assets/hero-industrial.jpg';
 import granulatorMachine from '@/assets/granulator-machine.jpg';
@@ -42,7 +41,7 @@ const featuredProducts = [
 
 export default function Index() {
   return (
-    <Layout>
+    <>
       {/* Hero Section */}
       <section className="relative min-h-[90vh] flex items-center -mt-32 md:-mt-40 pt-32 md:pt-40">
         <div className="absolute inset-0 z-0">
@@ -277,6 +276,6 @@ export default function Index() {
           </div>
         </div>
       </section>
-    </Layout>
+    </>
   );
 }

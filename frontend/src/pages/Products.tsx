@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -52,18 +51,16 @@ export default function Products() {
 
   if (!selectedProduct) {
     return (
-      <Layout>
-        <div className="p-16 text-center text-muted-foreground">
-          Loading products...
-        </div>
-      </Layout>
+      <div className="p-16 text-center text-muted-foreground">
+        Loading products...
+      </div>
     );
   }
 
   return (
-    <Layout>
+    <>
       {/* Hero Section */}
-      <section className="bg-primary py-16 -mt-32 md:-mt-40 pt-48 md:pt-56">
+      <section className="bg-primary py-16">
         <div className="container-industrial">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -240,7 +237,7 @@ export default function Products() {
           </div>
         </div>
       </section>
-    </Layout>
+    </>
   );
 }
 

@@ -1,4 +1,3 @@
-import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
@@ -8,7 +7,8 @@ const services = [
   {
     icon: Factory,
     title: 'Manufacturing',
-    description: 'We manufacture high-quality plastic granulator machines using state-of-the-art equipment and precision engineering. Our manufacturing process ensures consistent quality and performance.',
+    description:
+      'We manufacture high-quality plastic granulator machines using state-of-the-art equipment and precision engineering. Our manufacturing process ensures consistent quality and performance.',
     features: [
       'CNC precision machining',
       'Quality control at every stage',
@@ -19,7 +19,8 @@ const services = [
   {
     icon: PenTool,
     title: 'Custom Machine Design',
-    description: 'Need a machine tailored to your specific requirements? Our engineering team can design and build custom plastic processing solutions that meet your exact specifications.',
+    description:
+      'Need a machine tailored to your specific requirements? Our engineering team can design and build custom plastic processing solutions that meet your exact specifications.',
     features: [
       'Custom capacity options',
       'Special blade configurations',
@@ -30,7 +31,8 @@ const services = [
   {
     icon: Wrench,
     title: 'Maintenance & Support',
-    description: 'We provide comprehensive maintenance and support services to ensure your machines operate at peak performance. Our team is available for scheduled maintenance and emergency repairs.',
+    description:
+      'We provide comprehensive maintenance and support services to ensure your machines operate at peak performance. Our team is available for scheduled maintenance and emergency repairs.',
     features: [
       'Preventive maintenance',
       'Emergency repair service',
@@ -41,7 +43,8 @@ const services = [
   {
     icon: Package,
     title: 'Spare Parts',
-    description: 'We stock a complete range of spare parts for all our machines. Quick delivery ensures minimal downtime for your operations.',
+    description:
+      'We stock a complete range of spare parts for all our machines. Quick delivery ensures minimal downtime for your operations.',
     features: [
       'Original spare parts',
       'Quick delivery',
@@ -60,21 +63,23 @@ const processSteps = [
 
 export default function Services() {
   return (
-    <Layout>
+    <>
       {/* Hero Section */}
-      <section className="bg-primary py-16 -mt-32 md:-mt-40 pt-48 md:pt-56">
+      <section className="bg-primary py-16">
         <div className="container-industrial">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <span className="text-secondary font-heading font-semibold text-sm uppercase tracking-wider">Our Services</span>
+            <span className="text-secondary font-heading font-semibold text-sm uppercase tracking-wider">
+              Our Services
+            </span>
             <h1 className="font-heading font-bold text-4xl md:text-5xl text-primary-foreground mt-2 mb-4">
               Complete Industrial Solutions
             </h1>
             <p className="text-xl text-primary-foreground/80 max-w-2xl">
-              From manufacturing to maintenance, we offer comprehensive services to support your 
+              From manufacturing to maintenance, we offer comprehensive services to support your
               plastic processing operations.
             </p>
           </motion.div>
@@ -97,7 +102,9 @@ export default function Services() {
                 <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center mb-6">
                   <service.icon className="w-8 h-8 text-primary" />
                 </div>
-                <h3 className="font-heading font-bold text-2xl text-foreground mb-4">{service.title}</h3>
+                <h3 className="font-heading font-bold text-2xl text-foreground mb-4">
+                  {service.title}
+                </h3>
                 <p className="text-muted-foreground mb-6">{service.description}</p>
                 <ul className="space-y-3">
                   {service.features.map((feature) => (
@@ -116,18 +123,6 @@ export default function Services() {
       {/* Process Section */}
       <section className="section-padding bg-muted">
         <div className="container-industrial">
-          <motion.div 
-            className="text-center mb-12"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <span className="text-secondary font-heading font-semibold text-sm uppercase tracking-wider">How We Work</span>
-            <h2 className="font-heading font-bold text-3xl md:text-4xl text-foreground mt-2">
-              Our Process
-            </h2>
-          </motion.div>
-
           <div className="grid md:grid-cols-4 gap-6">
             {processSteps.map((item, index) => (
               <motion.div
@@ -139,12 +134,16 @@ export default function Services() {
                 transition={{ delay: index * 0.1 }}
               >
                 <div className="w-20 h-20 mx-auto mb-4 bg-primary rounded-full flex items-center justify-center">
-                  <span className="font-heading font-bold text-2xl text-primary-foreground">{item.step}</span>
+                  <span className="font-heading font-bold text-2xl text-primary-foreground">
+                    {item.step}
+                  </span>
                 </div>
                 {index < processSteps.length - 1 && (
                   <ArrowRight className="absolute top-10 -right-3 w-6 h-6 text-secondary hidden md:block" />
                 )}
-                <h3 className="font-heading font-bold text-lg text-foreground mb-2">{item.title}</h3>
+                <h3 className="font-heading font-bold text-lg text-foreground mb-2">
+                  {item.title}
+                </h3>
                 <p className="text-sm text-muted-foreground">{item.description}</p>
               </motion.div>
             ))}
@@ -152,7 +151,7 @@ export default function Services() {
         </div>
       </section>
 
-      {/* Why Choose Us */}
+     {/* WHY CHOOSE US (RESTORED EXACTLY) */}
       <section className="section-padding bg-primary">
         <div className="container-industrial">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -161,14 +160,19 @@ export default function Services() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <span className="text-secondary font-heading font-semibold text-sm uppercase tracking-wider">Why Choose Us</span>
+              <span className="text-secondary font-heading font-semibold text-sm uppercase tracking-wider">
+                Why Choose Us
+              </span>
+
               <h2 className="font-heading font-bold text-3xl md:text-4xl text-primary-foreground mt-2 mb-6">
                 Your Trusted Partner for Industrial Machinery
               </h2>
+
               <p className="text-primary-foreground/80 mb-8">
-                With over 10 years of experience in manufacturing plastic granulator machines, 
+                With over 10 years of experience in manufacturing plastic granulator machines,
                 we have the expertise and resources to deliver solutions that meet your needs.
               </p>
+
               <ul className="space-y-4">
                 {[
                   '10+ years of industry experience',
@@ -178,7 +182,7 @@ export default function Services() {
                   'Competitive pricing and flexible payment options',
                 ].map((item) => (
                   <li key={item} className="flex items-center gap-3 text-primary-foreground">
-                    <CheckCircle className="w-5 h-5 text-secondary flex-shrink-0" />
+                    <CheckCircle className="w-5 h-5 text-secondary" />
                     {item}
                   </li>
                 ))}
@@ -197,9 +201,16 @@ export default function Services() {
                 { value: '200+', label: 'Happy Clients' },
                 { value: '24/7', label: 'Support' },
               ].map((stat) => (
-                <div key={stat.label} className="bg-primary-foreground/10 p-6 rounded-lg text-center">
-                  <div className="font-heading font-bold text-4xl text-secondary">{stat.value}</div>
-                  <div className="text-primary-foreground/70 mt-2">{stat.label}</div>
+                <div
+                  key={stat.label}
+                  className="bg-primary-foreground/10 p-6 rounded-lg text-center"
+                >
+                  <div className="font-heading font-bold text-4xl text-secondary">
+                    {stat.value}
+                  </div>
+                  <div className="text-primary-foreground/70 mt-2">
+                    {stat.label}
+                  </div>
                 </div>
               ))}
             </motion.div>
@@ -208,19 +219,17 @@ export default function Services() {
       </section>
 
       {/* CTA */}
-      <section className="section-padding bg-background">
-        <div className="container-industrial text-center">
-          <h2 className="font-heading font-bold text-2xl md:text-3xl text-foreground mb-4">
-            Ready to Get Started?
-          </h2>
-          <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Contact us today to discuss your requirements and get a free consultation.
-          </p>
-          <Button variant="industrial" size="lg" asChild>
-            <Link to="/contact">Contact Us</Link>
-          </Button>
-        </div>
+      <section className="section-padding bg-background text-center">
+        <h2 className="font-heading font-bold text-2xl md:text-3xl mb-4">
+          Ready to Get Started?
+        </h2>
+        <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
+          Contact us today to discuss your requirements and get a free consultation.
+        </p>
+        <Button variant="industrial" size="lg" asChild>
+          <Link to="/contact">Contact Us</Link>
+        </Button>
       </section>
-    </Layout>
+    </>
   );
 }

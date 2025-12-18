@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Layout } from '@/components/layout/Layout';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import granulatorMachine from '@/assets/granulator-machine.jpg';
@@ -29,9 +28,9 @@ export default function Gallery() {
     : galleryImages.filter(img => img.category === activeCategory);
 
   return (
-    <Layout>
+    <>
       {/* Hero Section */}
-      <section className="bg-primary py-16 -mt-32 md:-mt-40 pt-48 md:pt-56">
+      <section className="bg-primary py-16">
         <div className="container-industrial">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -148,6 +147,6 @@ export default function Gallery() {
           </motion.div>
         )}
       </AnimatePresence>
-    </Layout>
+    </>
   );
 }
