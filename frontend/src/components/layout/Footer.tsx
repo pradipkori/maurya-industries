@@ -41,7 +41,7 @@ export function Footer() {
             </div>
             <p className="text-primary-foreground/80 mb-6 leading-relaxed">
               Leading manufacturer of high-quality Plastic Granulator Machines and industrial machinery. 
-              Committed to excellence in engineering for over 10 years.
+              Committed to excellence in engineering for over 20 years.
             </p>
             <div className="flex gap-4">
               <a href="#" className="w-10 h-10 rounded bg-primary-foreground/10 flex items-center justify-center hover:bg-secondary transition-colors">

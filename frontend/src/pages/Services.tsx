@@ -169,13 +169,13 @@ export default function Services() {
               </h2>
 
               <p className="text-primary-foreground/80 mb-8">
-                With over 10 years of experience in manufacturing plastic granulator machines,
+                With over 20 years of experience in manufacturing plastic granulator machines,
                 we have the expertise and resources to deliver solutions that meet your needs.
               </p>
 
               <ul className="space-y-4">
                 {[
-                  '10+ years of industry experience',
+                  '20+ years of industry experience',
                   'ISO certified manufacturing processes',
                   '500+ machines delivered across India',
                   'Dedicated after-sales support team',
