@@ -10,7 +10,11 @@ const app = express();
 // =========================
 app.use(
   cors({
-    origin: "http://localhost:8080", // Vite frontend
+    origin: [
+      "http://localhost:8080",            // local Vite
+      "http://localhost:5173",            // local Vite (alt)
+      "https://maurya-industries-1.onrender.com" // production frontend
+    ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
