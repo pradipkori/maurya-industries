@@ -23,13 +23,19 @@ export function Navbar() {
       <div className="bg-primary text-primary-foreground py-2 hidden md:block">
         <div className="container-industrial flex justify-between items-center text-sm">
           <div className="flex items-center gap-6">
-            <a href="tel:+919876543210" className="flex items-center gap-2 hover:text-secondary transition-colors">
-              <Phone className="h-4 w-4" />
-              <span>+91 98765 43210</span>
-            </a>
-            <a href="mailto:info@mauryaindustries.com" className="flex items-center gap-2 hover:text-secondary transition-colors">
+            <div className="flex items-center gap-4">
+              <a href="tel:+919930418261" className="flex items-center gap-2 hover:text-secondary transition-colors">
+                <Phone className="h-4 w-4" />
+                <span>+91 99304 18261</span>
+              </a>
+              <a href="tel:+919307766923" className="flex items-center gap-2 hover:text-secondary transition-colors">
+                <Phone className="h-4 w-4" />
+                <span>+91 93077 66923</span>
+              </a>
+            </div>
+            <a href="mailto:mauryaindustries1978@gmail.com" className="flex items-center gap-2 hover:text-secondary transition-colors">
               <Mail className="h-4 w-4" />
-              <span>info@mauryaindustries.com</span>
+              <span>mauryaindustries1978@gmail.com</span>
             </a>
           </div>
           <div className="text-primary-foreground/80">

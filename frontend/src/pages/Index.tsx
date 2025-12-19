@@ -18,24 +18,24 @@ const highlights = [
 const featuredProducts = [
   {
     id: 1,
-    name: 'Plastic Granulator Mi150',
-    image: granulatorMachine,
-    capacity: '150 kg/hr',
+    name: 'Automatic Plastic Cutting Machine',
+    image: 'https://5.imimg.com/data5/SELLER/Default/2022/4/NT/PQ/ZR/47305699/khaleel-model-plastic-cutting-machine-500x500.jpg',
+    capacity: '200 Kg/h',
     power: '15 HP',
   },
   {
     id: 2,
-    name: 'Plastic Granulator Mi200',
-    image: granulator3,
-    capacity: '200 kg/hr',
-    power: '20 HP',
+    name: 'High Speed Mixer Machine',
+    image: 'https://5.imimg.com/data5/SELLER/Default/2022/4/CA/US/QW/47305699/high-speed-mixer-machine-500x500.jpg',
+    capacity: '500 KG/HOUR',
+    power: 'N/A',
   },
   {
     id: 3,
-    name: 'Plastic Granulator Mi300',
-    image: granulatorMachine,
-    capacity: '300 kg/hr',
-    power: '30 HP',
+    name: 'Plastic Dewatering Machine',
+    image: 'https://5.imimg.com/data5/SELLER/Default/2023/1/QC/FU/HJ/47305699/plastic-dewatering-machine-500x500.jpg',
+    capacity: '500 KG Per Hour',
+    power: '7.5 HP',
   },
 ];
 
@@ -132,11 +132,11 @@ export default function Index() {
           >
             <span className="text-secondary font-heading font-semibold text-sm uppercase tracking-wider">Our Products</span>
             <h2 className="font-heading font-bold text-3xl md:text-4xl text-foreground mt-2 mb-4">
-              Plastic Granulator Machines
+              Industrial Machinery & Accessories
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              High-performance plastic granulators designed for maximum efficiency and durability. 
-              Perfect for recycling and processing various plastic materials.
+              High-performance industrial machinery and cutting tools designed for maximum efficiency and durability. 
+              Perfect for various manufacturing and processing needs.
             </p>
           </motion.div>
 
@@ -268,7 +268,7 @@ export default function Index() {
                 <Link to="/contact">Get Quote</Link>
               </Button>
               <Button variant="hero-outline" size="lg" asChild>
-                <a href="tel:+919876543210">
+                <a href="tel:+919930418261">
                   <Phone className="mr-2 w-5 h-5" /> Call Now
                 </a>
               </Button>

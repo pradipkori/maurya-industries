@@ -125,17 +125,22 @@ export default function Contact() {
             </Info>
 
             <Info icon={<Phone />} title="Phone">
-              <a href="tel:+919876543210" className="hover:text-primary">
-                +91 98765 43210
-              </a>
+              <div className="space-y-1">
+                <a href="tel:+919930418261" className="hover:text-primary block">
+                  +91 99304 18261
+                </a>
+                <a href="tel:+919307766923" className="hover:text-primary block">
+                  +91 93077 66923
+                </a>
+              </div>
             </Info>
 
             <Info icon={<Mail />} title="Email">
               <a
-                href="mailto:info@mauryaindustries.com"
+                href="mailto:mauryaindustries1978@gmail.com"
                 className="hover:text-primary"
               >
-                info@mauryaindustries.com
+                mauryaindustries1978@gmail.com
               </a>
             </Info>
 

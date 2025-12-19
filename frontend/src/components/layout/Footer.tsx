@@ -100,15 +100,21 @@ export function Footer() {
                 </span>
               </li>
               <li>
-                <a href="tel:+919876543210" className="flex items-center gap-3 text-primary-foreground/80 hover:text-secondary transition-colors">
-                  <Phone className="h-5 w-5 text-secondary" />
-                  +91 98765 43210
-                </a>
+                <div className="flex flex-col gap-2">
+                  <a href="tel:+919930418261" className="flex items-center gap-3 text-primary-foreground/80 hover:text-secondary transition-colors">
+                    <Phone className="h-5 w-5 text-secondary" />
+                    +91 99304 18261
+                  </a>
+                  <a href="tel:+919307766923" className="flex items-center gap-3 text-primary-foreground/80 hover:text-secondary transition-colors">
+                    <Phone className="h-5 w-5 text-secondary" />
+                    +91 93077 66923
+                  </a>
+                </div>
               </li>
               <li>
-                <a href="mailto:info@mauryaindustries.com" className="flex items-center gap-3 text-primary-foreground/80 hover:text-secondary transition-colors">
+                <a href="mailto:mauryaindustries1978@gmail.com" className="flex items-center gap-3 text-primary-foreground/80 hover:text-secondary transition-colors">
                   <Mail className="h-5 w-5 text-secondary" />
-                  info@mauryaindustries.com
+                  mauryaindustries1978@gmail.com
                 </a>
               </li>
             </ul>
