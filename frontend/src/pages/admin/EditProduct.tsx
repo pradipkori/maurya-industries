@@ -35,7 +35,8 @@ export default function EditProduct() {
 
   // 🔹 Load existing product
   useEffect(() => {
-    fetch(`http://localhost:5000/api/products/${id}`)
+    fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`)
+
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
@@ -78,7 +79,7 @@ export default function EditProduct() {
 
   // 💾 Save changes
   const saveProduct = async () => {
-    await fetch(`http://localhost:5000/api/products/${id}`, {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

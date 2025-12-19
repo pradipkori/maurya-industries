@@ -28,8 +28,8 @@ export default function AdminDashboard() {
   // 📦 FETCH DATA
   const fetchData = async () => {
     try {
-      const p = await fetch("http://localhost:5000/api/products").then(r => r.json());
-      const e = await fetch("http://localhost:5000/api/enquiries").then(r => r.json());
+      const p = await fetch("${import.meta.env.VITE_API_URL}/api/products").then(r => r.json());
+      const e = await fetch("${import.meta.env.VITE_API_URL}/api/enquiries").then(r => r.json());
 
       if (p.success) setProducts(p.products);
       if (e.success) setEnquiries(e.enquiries);
@@ -47,7 +47,7 @@ export default function AdminDashboard() {
   // 🗑 DELETE PRODUCT
   const deleteProduct = async (id: string) => {
     if (!confirm("Delete this product?")) return;
-    await fetch(`http://localhost:5000/api/products/${id}`, {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`, {
       method: "DELETE",
     });
     fetchData();
@@ -56,7 +56,7 @@ export default function AdminDashboard() {
   // 🗑 DELETE ENQUIRY
   const deleteEnquiry = async (id: string) => {
     if (!confirm("Delete this enquiry?")) return;
-    await fetch(`http://localhost:5000/api/enquiries/${id}`, {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/enquiries/${id}`, {
       method: "DELETE",
     });
     fetchData();
