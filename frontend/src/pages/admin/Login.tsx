@@ -22,8 +22,7 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/admin/login`,
+      const res = await fetch("https://maurya-industries-backend.onrender.com/api/admin/login",
         {
           method: "POST",
           headers: {
