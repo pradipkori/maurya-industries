@@ -93,8 +93,14 @@ export default function Index() {
           </motion.div>
         </div>
 
-        {/* Diagonal Bottom */}
-        <div className="absolute bottom-0 left-0 right-0 h-24 bg-background" style={{ clipPath: 'polygon(0 100%, 100% 0, 100% 100%)' }} />
+       {/* Diagonal Bottom */}
+{/*
+<div
+  className="absolute bottom-0 left-0 right-0 h-24 bg-background"
+  style={{ clipPath: 'polygon(0 100%, 100% 0, 100% 100%)' }}
+/>
+*/}
+
       </section>
 
       {/* Highlights Section */}
