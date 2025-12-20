@@ -1,25 +1,19 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff } from "lucide-react";
 
 export default function AdminLogin() {
-  const navigate = useNavigate();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // 🔥 FORCE LOGOUT WHEN LOGIN PAGE OPENS
+  // 🔒 Clear old token on login page load
   useEffect(() => {
     localStorage.removeItem("adminToken");
-    setEmail("");
-    setPassword("");
-    setError("");
   }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -28,21 +22,31 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      const res = await fetch("${import.meta.env.VITE_API_URL}/api/admin/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/admin/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password }),
+        }
+      );
 
       const data = await res.json();
+      console.log("LOGIN RESPONSE:", data);
 
-      if (data.success) {
+      if (data.success === true) {
         localStorage.setItem("adminToken", data.token);
-        navigate("/admin");
-      } else {
-        setError("Invalid admin credentials");
+
+        // ✅ FORCE redirect (most reliable)
+        window.location.href = "/admin/dashboard";
+        return;
       }
-    } catch {
+
+      setError("Invalid admin credentials");
+    } catch (err) {
+      console.error(err);
       setError("Something went wrong. Try again.");
     } finally {
       setLoading(false);
@@ -93,11 +97,7 @@ export default function AdminLogin() {
             </p>
           )}
 
-          <Button
-            type="submit"
-            className="w-full mt-6"
-            disabled={loading}
-          >
+          <Button type="submit" className="w-full mt-6" disabled={loading}>
             {loading ? "Logging in..." : "Login"}
           </Button>
         </form>
