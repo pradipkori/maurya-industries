@@ -1,3 +1,4 @@
+import ScrollToTop from "./ScrollToTop";
 import { ReactNode } from "react";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
@@ -9,6 +10,9 @@ interface LayoutProps {
 export function Layout({ children }: LayoutProps) {
   return (
     <div className="flex flex-col min-h-screen">
+      {/* Scroll to top on route change */}
+      <ScrollToTop />
+
       {/* Navbar */}
       <Navbar />
 
@@ -22,5 +26,6 @@ export function Layout({ children }: LayoutProps) {
     </div>
   );
 }
+
 
 export default Layout;

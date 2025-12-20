@@ -9,9 +9,9 @@ const navigation = {
     { name: 'Contact', href: '/contact' },
   ],
   products: [
-    { name: 'Plastic Granulator Mi150', href: '/products' },
-    { name: 'Plastic Granulator Mi200', href: '/products' },
-    { name: 'Plastic Granulator Mi300', href: '/products' },
+    { name: 'Plastic Grinder Machine', href: '/products' },
+    { name: 'Plastic Dana Cutter', href: '/products' },
+    { name: 'Plastic Dewatering Machine', href: '/products' },
     { name: 'All Products', href: '/products' },
   ],
   services: [
