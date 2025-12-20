@@ -16,7 +16,9 @@ export default function AdminDashboard() {
   // 🔐 AUTH PROTECTION
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
-    if (!token) navigate("/admin/login");
+    if (!token) {
+      navigate("/admin/login");
+    }
   }, [navigate]);
 
   // 🚪 LOGOUT
@@ -28,13 +30,32 @@ export default function AdminDashboard() {
   // 📦 FETCH DATA
   const fetchData = async () => {
     try {
-      const p = await fetch("${import.meta.env.VITE_API_URL}/api/products").then(r => r.json());
-      const e = await fetch("${import.meta.env.VITE_API_URL}/api/enquiries").then(r => r.json());
+      const token = localStorage.getItem("adminToken");
 
-      if (p.success) setProducts(p.products);
-      if (e.success) setEnquiries(e.enquiries);
+      const p = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/products`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      ).then(res => res.json());
+
+      const e = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/enquiries`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      ).then(res => res.json());
+
+      if (p?.success) setProducts(p.products);
+      if (e?.success) setEnquiries(e.enquiries);
     } catch (err) {
-      console.error(err);
+      console.error("Admin fetch error:", err);
     } finally {
       setLoading(false);
     }
@@ -47,18 +68,34 @@ export default function AdminDashboard() {
   // 🗑 DELETE PRODUCT
   const deleteProduct = async (id: string) => {
     if (!confirm("Delete this product?")) return;
-    await fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`, {
-      method: "DELETE",
-    });
+
+    await fetch(
+      `${import.meta.env.VITE_API_URL}/api/products/${id}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+      }
+    );
+
     fetchData();
   };
 
   // 🗑 DELETE ENQUIRY
   const deleteEnquiry = async (id: string) => {
     if (!confirm("Delete this enquiry?")) return;
-    await fetch(`${import.meta.env.VITE_API_URL}/api/enquiries/${id}`, {
-      method: "DELETE",
-    });
+
+    await fetch(
+      `${import.meta.env.VITE_API_URL}/api/enquiries/${id}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+      }
+    );
+
     fetchData();
   };
 
@@ -81,15 +118,24 @@ export default function AdminDashboard() {
         <h2 className="text-xl font-bold mb-8">Maurya Admin</h2>
 
         <nav className="flex flex-col gap-3">
-          <Button variant={tab === "dashboard" ? "default" : "ghost"} onClick={() => setTab("dashboard")}>
+          <Button
+            variant={tab === "dashboard" ? "default" : "ghost"}
+            onClick={() => setTab("dashboard")}
+          >
             Dashboard
           </Button>
 
-          <Button variant={tab === "enquiries" ? "default" : "ghost"} onClick={() => setTab("enquiries")}>
+          <Button
+            variant={tab === "enquiries" ? "default" : "ghost"}
+            onClick={() => setTab("enquiries")}
+          >
             Enquiries
           </Button>
 
-          <Button variant={tab === "products" ? "default" : "ghost"} onClick={() => setTab("products")}>
+          <Button
+            variant={tab === "products" ? "default" : "ghost"}
+            onClick={() => setTab("products")}
+          >
             Products
           </Button>
 
@@ -125,7 +171,9 @@ export default function AdminDashboard() {
 
               <div className="bg-white border rounded p-6">
                 <p className="text-sm text-muted-foreground">System Status</p>
-                <h2 className="text-xl font-semibold text-green-600 mt-2">Active</h2>
+                <h2 className="text-xl font-semibold text-green-600 mt-2">
+                  Active
+                </h2>
               </div>
             </div>
           </>
@@ -156,7 +204,11 @@ export default function AdminDashboard() {
                         <td className="p-3">{e.email}</td>
                         <td className="p-3">{e.message}</td>
                         <td className="p-3">
-                          <Button size="sm" variant="destructive" onClick={() => deleteEnquiry(e._id)}>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => deleteEnquiry(e._id)}
+                          >
                             Delete
                           </Button>
                         </td>
@@ -189,13 +241,24 @@ export default function AdminDashboard() {
                 {filteredProducts.map(p => (
                   <div key={p._id} className="bg-white border rounded p-4">
                     <h3 className="font-bold">{p.name}</h3>
-                    {p.shortDesc && <p className="text-sm mt-2">{p.shortDesc}</p>}
+                    {p.shortDesc && (
+                      <p className="text-sm mt-2">{p.shortDesc}</p>
+                    )}
 
                     <div className="flex gap-2 mt-4">
-                      <Button size="sm" onClick={() => navigate(`/admin/edit-product/${p._id}`)}>
+                      <Button
+                        size="sm"
+                        onClick={() =>
+                          navigate(`/admin/edit-product/${p._id}`)
+                        }
+                      >
                         Edit
                       </Button>
-                      <Button size="sm" variant="destructive" onClick={() => deleteProduct(p._id)}>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => deleteProduct(p._id)}
+                      >
                         Delete
                       </Button>
                     </div>
