@@ -39,7 +39,7 @@ export default function AdminLogin() {
         localStorage.setItem("adminToken", data.token);
 
         // ✅ FORCE redirect (most reliable)
-        window.location.href = "/admin/dashboard";
+        window.location.href = "/admin";
         return;
       }
 
