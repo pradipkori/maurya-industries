@@ -4,14 +4,13 @@ import { Phone, Mail, MapPin, Facebook, Linkedin, Twitter, Instagram } from 'luc
 const navigation = {
   company: [
     { name: 'About Us', href: '/about' },
-    { name: 'Our Services', href: '/services' },
-    { name: 'Gallery', href: '/gallery' },
+    { name: 'Our Services', href: '/services' },  
     { name: 'Contact', href: '/contact' },
   ],
   products: [
-    { name: 'Plastic Grinder Machine', href: '/products' },
-    { name: 'Plastic Dana Cutter', href: '/products' },
-    { name: 'Plastic Dewatering Machine', href: '/products' },
+    { name: 'Plastic Grinder Machine', href: '/products#plastic-grinder' },
+    { name: 'Plastic Dana Cutter', href: '/products#plastic-dana-cutter' },
+    { name: 'Plastic Dewatering Machine', href: '/products#plastic-dewatering' },
     { name: 'All Products', href: '/products' },
   ],
   services: [
@@ -28,6 +27,7 @@ export function Footer() {
       {/* Main Footer */}
       <div className="container-industrial section-padding">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+          
           {/* Company Info */}
           <div>
             <div className="flex items-center gap-3 mb-6">
@@ -39,10 +39,12 @@ export function Footer() {
                 <p className="text-xs text-primary-foreground/70 uppercase tracking-wider">Industries</p>
               </div>
             </div>
+
             <p className="text-primary-foreground/80 mb-6 leading-relaxed">
               Leading manufacturer of high-quality Plastic Granulator Machines and industrial machinery. 
               Committed to excellence in engineering for over 20 years.
             </p>
+
             <div className="flex gap-4">
               <a href="#" className="w-10 h-10 rounded bg-primary-foreground/10 flex items-center justify-center hover:bg-secondary transition-colors">
                 <Facebook className="h-5 w-5" />
@@ -65,7 +67,10 @@ export function Footer() {
             <ul className="space-y-3">
               {navigation.company.map((item) => (
                 <li key={item.name}>
-                  <Link to={item.href} className="text-primary-foreground/80 hover:text-secondary transition-colors">
+                  <Link
+                    to={item.href}
+                    className="text-primary-foreground/80 hover:text-secondary transition-colors"
+                  >
                     {item.name}
                   </Link>
                 </li>
@@ -79,7 +84,10 @@ export function Footer() {
             <ul className="space-y-3">
               {navigation.products.map((item) => (
                 <li key={item.name}>
-                  <Link to={item.href} className="text-primary-foreground/80 hover:text-secondary transition-colors">
+                  <Link
+                    to={item.href}
+                    className="text-primary-foreground/80 hover:text-secondary transition-colors"
+                  >
                     {item.name}
                   </Link>
                 </li>
@@ -99,6 +107,7 @@ export function Footer() {
                   Vasai (E), Palghar – 401208
                 </span>
               </li>
+
               <li>
                 <div className="flex flex-col gap-2">
                   <a href="tel:+919930418261" className="flex items-center gap-3 text-primary-foreground/80 hover:text-secondary transition-colors">
@@ -111,6 +120,7 @@ export function Footer() {
                   </a>
                 </div>
               </li>
+
               <li>
                 <a href="mailto:mauryaindustries1978@gmail.com" className="flex items-center gap-3 text-primary-foreground/80 hover:text-secondary transition-colors">
                   <Mail className="h-5 w-5 text-secondary" />
@@ -119,6 +129,7 @@ export function Footer() {
               </li>
             </ul>
           </div>
+
         </div>
       </div>
 
