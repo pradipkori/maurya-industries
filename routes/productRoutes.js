@@ -7,16 +7,39 @@ const { storage } = require("../config/cloudinary");
 const upload = multer({ storage });
 
 /**
- * 🛡 SAFE JSON PARSER
+ * 🛡 SAFE PARSERS
  */
-const safeParse = (value, fallback) => {
+
+// Always return object
+const parseObject = (value) => {
   try {
-    if (!value) return fallback;
+    if (!value) return {};
+    if (typeof value === "string") return JSON.parse(value);
     if (typeof value === "object") return value;
-    return JSON.parse(value);
+    return {};
   } catch {
-    return fallback;
+    return {};
   }
+};
+
+// Always return string array
+const parseArray = (value) => {
+  if (!value) return [];
+
+  if (Array.isArray(value)) {
+    return value.map(String);
+  }
+
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed.map(String) : [value];
+    } catch {
+      return [value];
+    }
+  }
+
+  return [];
 };
 
 /**
@@ -28,21 +51,22 @@ router.post("/", upload.single("image"), async (req, res) => {
     console.log("BODY:", req.body);
     console.log("FILE:", req.file);
 
-    const productData = {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Product image is required",
+      });
+    }
+
+    const product = await Product.create({
       name: req.body.name?.trim(),
       model: req.body.model?.trim(),
       category: req.body.category?.trim(),
       shortDesc: req.body.shortDesc?.trim(),
-      specs: safeParse(req.body.specs, {}),
-      features: safeParse(req.body.features, []),
-    };
-
-    // ✅ Add image only if uploaded
-    if (req.file && req.file.path) {
-      productData.imageUrl = req.file.path;
-    }
-
-    const product = await Product.create(productData);
+      imageUrl: req.file.path, // Cloudinary URL
+      specs: parseObject(req.body.specs),
+      features: parseArray(req.body.features),
+    });
 
     console.log("✅ PRODUCT CREATED:", product._id);
 
@@ -54,7 +78,7 @@ router.post("/", upload.single("image"), async (req, res) => {
     console.error("🔥 ADD PRODUCT ERROR:", error);
     res.status(500).json({
       success: false,
-      message: error.message || "Failed to add product",
+      message: error.message,
     });
   }
 });
@@ -64,18 +88,16 @@ router.post("/", upload.single("image"), async (req, res) => {
  */
 router.put("/:id", upload.single("image"), async (req, res) => {
   try {
-    console.log("➡️ UPDATE PRODUCT HIT");
-
     const updateData = {
       name: req.body.name?.trim(),
       model: req.body.model?.trim(),
       category: req.body.category?.trim(),
       shortDesc: req.body.shortDesc?.trim(),
-      specs: safeParse(req.body.specs, {}),
-      features: safeParse(req.body.features, []),
+      specs: parseObject(req.body.specs),
+      features: parseArray(req.body.features),
     };
 
-    if (req.file && req.file.path) {
+    if (req.file) {
       updateData.imageUrl = req.file.path;
     }
 
@@ -90,7 +112,7 @@ router.put("/:id", upload.single("image"), async (req, res) => {
     console.error("🔥 UPDATE PRODUCT ERROR:", error);
     res.status(500).json({
       success: false,
-      message: error.message || "Failed to update product",
+      message: error.message,
     });
   }
 });
@@ -103,43 +125,19 @@ router.delete("/:id", async (req, res) => {
     await Product.findByIdAndDelete(req.params.id);
     res.json({ success: true });
   } catch (error) {
-    console.error("🔥 DELETE PRODUCT ERROR:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to delete product",
-    });
+    res.status(500).json({ success: false });
   }
 });
 
 /**
- * 📄 GET ALL PRODUCTS
+ * 📄 GET PRODUCTS
  */
 router.get("/", async (req, res) => {
   try {
     const products = await Product.find().sort({ createdAt: -1 });
     res.json({ success: true, products });
   } catch (error) {
-    console.error("🔥 GET PRODUCTS ERROR:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch products",
-    });
-  }
-});
-
-/**
- * 📄 GET SINGLE PRODUCT
- */
-router.get("/:id", async (req, res) => {
-  try {
-    const product = await Product.findById(req.params.id);
-    if (!product) {
-      return res.status(404).json({ success: false });
-    }
-    res.json({ success: true, product });
-  } catch (error) {
-    console.error("🔥 GET SINGLE PRODUCT ERROR:", error);
-    res.status(404).json({ success: false });
+    res.status(500).json({ success: false });
   }
 });
 
