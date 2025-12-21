@@ -6,7 +6,7 @@ require("dotenv").config();
 const app = express();
 
 // =========================
-// Middleware
+// Middleware (ORDER MATTERS)
 // =========================
 app.use(
   cors({
@@ -16,13 +16,24 @@ app.use(
       "https://maurya-industries-1.onrender.com",
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
 
-// 🔴 THIS WAS MISSING (VERY IMPORTANT)
+// ✅ REQUIRED for multer + multipart/form-data
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+// =========================
+// Request Logger (safe)
+// =========================
+if (process.env.NODE_ENV !== "production") {
+  app.use((req, res, next) => {
+    console.log(`➡️ ${req.method} ${req.originalUrl}`);
+    next();
+  });
+}
 
 // =========================
 // MongoDB Connection
@@ -36,30 +47,33 @@ mongoose
   });
 
 // =========================
-// Test Route
+// Health Check Route
 // =========================
 app.get("/", (req, res) => {
-  res.send("Backend + MongoDB running 🚀");
+  res.status(200).send("Backend + MongoDB running 🚀");
 });
 
 // =========================
 // Routes
 // =========================
-
-// Enquiry routes
 app.use("/api/enquiries", require("./routes/enquiryRoutes"));
-
-// Product routes
 app.use("/api/products", require("./routes/productRoutes"));
-
-// Admin auth routes
 app.use("/api/admin", require("./routes/adminAuthRoutes"));
-
-// Achievement routes
 app.use("/api/achievements", require("./routes/achievementRoutes"));
 
 // =========================
-// Server Start
+// Global Error Handler (prevents crash)
+// =========================
+app.use((err, req, res, next) => {
+  console.error("🔥 UNHANDLED ERROR:", err);
+  res.status(500).json({
+    success: false,
+    message: "Internal Server Error",
+  });
+});
+
+// =========================
+// Server Start (Render-safe)
 // =========================
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
