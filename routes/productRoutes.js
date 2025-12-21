@@ -7,6 +7,19 @@ const { storage } = require("../config/cloudinary");
 const upload = multer({ storage });
 
 /**
+ * 🛡 SAFE JSON PARSER
+ */
+const safeParse = (value, fallback) => {
+  try {
+    if (!value) return fallback;
+    if (typeof value === "object") return value;
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
+};
+
+/**
  * ➕ ADD PRODUCT
  */
 router.post("/", upload.single("image"), async (req, res) => {
@@ -15,25 +28,23 @@ router.post("/", upload.single("image"), async (req, res) => {
     console.log("BODY:", req.body);
     console.log("FILE:", req.file);
 
-    // ❌ Image missing
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        message: "Product image is required",
-      });
+    const productData = {
+      name: req.body.name?.trim(),
+      model: req.body.model?.trim(),
+      category: req.body.category?.trim(),
+      shortDesc: req.body.shortDesc?.trim(),
+      specs: safeParse(req.body.specs, {}),
+      features: safeParse(req.body.features, []),
+    };
+
+    // ✅ Add image only if uploaded
+    if (req.file && req.file.path) {
+      productData.imageUrl = req.file.path;
     }
 
-    const product = await Product.create({
-      name: req.body.name,
-      model: req.body.model,
-      category: req.body.category,
-      shortDesc: req.body.shortDesc,
-      imageUrl: req.file.path, // ✅ Cloudinary URL
-      specs: req.body.specs ? JSON.parse(req.body.specs) : {},
-      features: req.body.features ? JSON.parse(req.body.features) : [],
-    });
+    const product = await Product.create(productData);
 
-    console.log("✅ PRODUCT CREATED");
+    console.log("✅ PRODUCT CREATED:", product._id);
 
     res.status(201).json({
       success: true,
@@ -43,7 +54,7 @@ router.post("/", upload.single("image"), async (req, res) => {
     console.error("🔥 ADD PRODUCT ERROR:", error);
     res.status(500).json({
       success: false,
-      message: "Failed to add product",
+      message: error.message || "Failed to add product",
     });
   }
 });
@@ -56,15 +67,15 @@ router.put("/:id", upload.single("image"), async (req, res) => {
     console.log("➡️ UPDATE PRODUCT HIT");
 
     const updateData = {
-      name: req.body.name,
-      model: req.body.model,
-      category: req.body.category,
-      shortDesc: req.body.shortDesc,
-      specs: req.body.specs ? JSON.parse(req.body.specs) : {},
-      features: req.body.features ? JSON.parse(req.body.features) : [],
+      name: req.body.name?.trim(),
+      model: req.body.model?.trim(),
+      category: req.body.category?.trim(),
+      shortDesc: req.body.shortDesc?.trim(),
+      specs: safeParse(req.body.specs, {}),
+      features: safeParse(req.body.features, []),
     };
 
-    if (req.file) {
+    if (req.file && req.file.path) {
       updateData.imageUrl = req.file.path;
     }
 
@@ -79,7 +90,7 @@ router.put("/:id", upload.single("image"), async (req, res) => {
     console.error("🔥 UPDATE PRODUCT ERROR:", error);
     res.status(500).json({
       success: false,
-      message: "Failed to update product",
+      message: error.message || "Failed to update product",
     });
   }
 });
