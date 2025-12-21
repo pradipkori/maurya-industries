@@ -11,15 +11,17 @@ const app = express();
 app.use(
   cors({
     origin: [
-      "http://localhost:8080",            // local Vite
-      "http://localhost:5173",            // local Vite (alt)
-      "https://maurya-industries-1.onrender.com" // production frontend
+      "http://localhost:8080",
+      "http://localhost:5173",
+      "https://maurya-industries-1.onrender.com",
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
 );
 
+// 🔴 THIS WAS MISSING (VERY IMPORTANT)
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // =========================
@@ -45,29 +47,21 @@ app.get("/", (req, res) => {
 // =========================
 
 // Enquiry routes
-const enquiryRoutes = require("./routes/enquiryRoutes");
-app.use("/api/enquiries", enquiryRoutes);
+app.use("/api/enquiries", require("./routes/enquiryRoutes"));
 
 // Product routes
-const productRoutes = require("./routes/productRoutes");
-app.use("/api/products", productRoutes);
+app.use("/api/products", require("./routes/productRoutes"));
 
-// AUTH ROUTES
+// Admin auth routes
+app.use("/api/admin", require("./routes/adminAuthRoutes"));
 
-const adminAuthRoutes = require("./routes/adminAuthRoutes");
-app.use("/api/admin", adminAuthRoutes);
-
-// ACHIEVEMENT ROUTE
-
-const achievementRoutes = require("./routes/achievementRoutes");
-app.use("/api/achievements", achievementRoutes);
-
-
+// Achievement routes
+app.use("/api/achievements", require("./routes/achievementRoutes"));
 
 // =========================
 // Server Start
 // =========================
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

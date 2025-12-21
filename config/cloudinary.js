@@ -7,12 +7,20 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// 🔍 PROVE ENV EXISTS (TEMP)
+console.log("☁️ CLOUDINARY ENV", {
+  cloud: !!process.env.CLOUDINARY_CLOUD_NAME,
+  key: !!process.env.CLOUDINARY_API_KEY,
+  secret: !!process.env.CLOUDINARY_API_SECRET,
+});
+
 const storage = new CloudinaryStorage({
   cloudinary,
-  params: {
+  params: async () => ({
     folder: "maurya-products",
+    resource_type: "image",
     allowed_formats: ["jpg", "png", "jpeg", "webp"],
-  },
+  }),
 });
 
 module.exports = { cloudinary, storage };

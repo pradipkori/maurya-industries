@@ -4,7 +4,13 @@ const multer = require("multer");
 const Product = require("../models/Product");
 const { storage } = require("../config/cloudinary");
 
-const upload = multer({ storage });
+// 🔴 VERY IMPORTANT: add file size limit (Render-safe)
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5 MB
+  },
+});
 
 /**
  * 🛡 SAFE PARSERS
@@ -48,13 +54,11 @@ const parseArray = (value) => {
 router.post("/", upload.single("image"), async (req, res) => {
   try {
     console.log("➡️ ADD PRODUCT HIT");
-    console.log("BODY:", req.body);
-    console.log("FILE:", req.file);
 
     if (!req.file) {
       return res.status(400).json({
         success: false,
-        message: "Product image is required",
+        message: "Image upload failed or file too large",
       });
     }
 
@@ -70,13 +74,13 @@ router.post("/", upload.single("image"), async (req, res) => {
 
     console.log("✅ PRODUCT CREATED:", product._id);
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       product,
     });
   } catch (error) {
     console.error("🔥 ADD PRODUCT ERROR:", error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message,
     });
