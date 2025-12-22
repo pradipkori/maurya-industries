@@ -5,15 +5,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
+interface MediaItem {
+  url: string;
+  type: "image" | "video";
+}
+
 export default function EditProduct() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [success, setSuccess] = useState(false);
 
-  // ✅ FIX: support multiple images + videos
+  // ✅ Existing media from DB
+  const [existingMedia, setExistingMedia] = useState<MediaItem[]>([]);
+
+  // ✅ Newly selected files
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
-  const [imageUrl, setImageUrl] = useState("");
 
   const [form, setForm] = useState({
     name: "",
@@ -32,7 +41,7 @@ export default function EditProduct() {
   });
 
   // ===============================
-  // LOAD PRODUCT DATA
+  // LOAD PRODUCT
   // ===============================
   useEffect(() => {
     if (!id) return;
@@ -41,24 +50,25 @@ export default function EditProduct() {
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
+          const p = data.product;
+
           setForm({
-            name: data.product.name || "",
-            model: data.product.model || "",
-            category: data.product.category || "",
-            shortDesc: data.product.shortDesc || "",
+            name: p.name || "",
+            model: p.model || "",
+            category: p.category || "",
+            shortDesc: p.shortDesc || "",
             specs: {
-              bladeLength: data.product.specs?.bladeLength || "",
-              power: data.product.specs?.power || "",
-              capacity: data.product.specs?.capacity || "",
-              throatSize: data.product.specs?.throatSize || "",
-              rotorSpeed: data.product.specs?.rotorSpeed || "",
-              weight: data.product.specs?.weight || "",
+              bladeLength: p.specs?.bladeLength || "",
+              power: p.specs?.power || "",
+              capacity: p.specs?.capacity || "",
+              throatSize: p.specs?.throatSize || "",
+              rotorSpeed: p.specs?.rotorSpeed || "",
+              weight: p.specs?.weight || "",
             },
-            features: data.product.features || [],
+            features: p.features || [],
           });
 
-          // Keep existing main image
-          setImageUrl(data.product.imageUrl || "");
+          setExistingMedia(p.media || []);
         }
       })
       .finally(() => setLoading(false));
@@ -78,9 +88,9 @@ export default function EditProduct() {
     });
   };
 
-  const handleFeatureChange = (index: number, value: string) => {
+  const handleFeatureChange = (i: number, value: string) => {
     const updated = [...form.features];
-    updated[index] = value;
+    updated[i] = value;
     setForm({ ...form, features: updated });
   };
 
@@ -88,19 +98,21 @@ export default function EditProduct() {
     setForm({ ...form, features: [...form.features, ""] });
   };
 
-  const removeFeature = (index: number) => {
+  const removeFeature = (i: number) => {
     setForm({
       ...form,
-      features: form.features.filter((_, i) => i !== index),
+      features: form.features.filter((_, idx) => idx !== i),
     });
   };
 
   // ===============================
-  // SAVE PRODUCT
+  // SAVE
   // ===============================
   const saveProduct = async () => {
-    const formData = new FormData();
+    setSaving(true);
+    setSuccess(false);
 
+    const formData = new FormData();
     formData.append("name", form.name);
     formData.append("model", form.model);
     formData.append("category", form.category);
@@ -108,7 +120,7 @@ export default function EditProduct() {
     formData.append("specs", JSON.stringify(form.specs));
     formData.append("features", JSON.stringify(form.features));
 
-    // ✅ FIX: send media files (images + videos)
+    // ✅ append (not replace)
     mediaFiles.forEach((file) => {
       formData.append("media", file);
     });
@@ -123,14 +135,16 @@ export default function EditProduct() {
       );
 
       const data = await res.json();
-
       if (data.success) {
-        navigate("/admin");
+        setSuccess(true);
+        setTimeout(() => navigate("/admin"), 1500);
       } else {
         alert("Failed to update product");
       }
-    } catch (err) {
+    } catch {
       alert("Server error");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -140,7 +154,7 @@ export default function EditProduct() {
   if (loading) {
     return (
       <Layout>
-        <div className="p-10 text-center text-muted-foreground">
+        <div className="p-10 text-center animate-pulse">
           Loading product...
         </div>
       </Layout>
@@ -155,18 +169,25 @@ export default function EditProduct() {
       <div className="max-w-5xl mx-auto p-10">
         <h1 className="text-3xl font-bold mb-8">Edit Product</h1>
 
-        {/* BASIC INFO */}
+        {success && (
+          <div className="mb-4 p-4 bg-green-100 text-green-700 rounded">
+            ✅ Product updated successfully!
+          </div>
+        )}
+
+        {/* BASIC */}
         <div className="grid md:grid-cols-3 gap-6">
-          <Input name="name" value={form.name} onChange={handleChange} placeholder="Product Name" />
-          <Input name="model" value={form.model} onChange={handleChange} placeholder="Model" />
-          <Input name="category" value={form.category} onChange={handleChange} placeholder="Category" />
+          <Input name="name" value={form.name} onChange={handleChange} />
+          <Input name="model" value={form.model} onChange={handleChange} />
+          <Input name="category" value={form.category} onChange={handleChange} />
         </div>
 
         <Textarea
           className="mt-4"
           value={form.shortDesc}
-          placeholder="Short Description"
-          onChange={(e) => setForm({ ...form, shortDesc: e.target.value })}
+          onChange={(e) =>
+            setForm({ ...form, shortDesc: e.target.value })
+          }
         />
 
         {/* MEDIA */}
@@ -175,42 +196,74 @@ export default function EditProduct() {
             type="file"
             multiple
             accept="image/*,video/*"
-            onChange={(e) =>
-              setMediaFiles(Array.from(e.target.files || []))
-            }
+            onChange={(e) => {
+              if (!e.target.files) return;
+              setMediaFiles((prev) => [
+                ...prev,
+                ...Array.from(e.target.files),
+              ]);
+            }}
           />
 
-          {/* Existing image preview */}
-          {imageUrl && (
-            <img
-              src={imageUrl}
-              alt="Product"
-              className="mt-4 w-48 h-48 object-cover rounded border"
-            />
+          {/* EXISTING MEDIA */}
+          {existingMedia.length > 0 && (
+            <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
+              {existingMedia.map((m, i) =>
+                m.type === "image" ? (
+                  <img
+                    key={i}
+                    src={m.url}
+                    className="w-full h-40 object-cover rounded border"
+                  />
+                ) : (
+                  <video
+                    key={i}
+                    src={m.url}
+                    controls
+                    className="w-full h-40 rounded border"
+                  />
+                )
+              )}
+            </div>
           )}
-        </div>
 
-        {/* SPECS */}
-        <h3 className="font-semibold mt-8 mb-4">Technical Specifications</h3>
-
-        <div className="grid md:grid-cols-3 gap-4">
-          <Input name="bladeLength" value={form.specs.bladeLength} onChange={handleSpecsChange} placeholder="Blade Length" />
-          <Input name="power" value={form.specs.power} onChange={handleSpecsChange} placeholder="Power" />
-          <Input name="capacity" value={form.specs.capacity} onChange={handleSpecsChange} placeholder="Capacity" />
-          <Input name="throatSize" value={form.specs.throatSize} onChange={handleSpecsChange} placeholder="Throat Size" />
-          <Input name="rotorSpeed" value={form.specs.rotorSpeed} onChange={handleSpecsChange} placeholder="Rotor Speed" />
-          <Input name="weight" value={form.specs.weight} onChange={handleSpecsChange} placeholder="Weight" />
+          {/* NEW FILES */}
+          {mediaFiles.length > 0 && (
+            <div className="mt-4 space-y-2 text-sm">
+              {mediaFiles.map((f, i) => (
+                <div
+                  key={i}
+                  className="flex justify-between items-center border p-2 rounded"
+                >
+                  <span>
+                    {f.type.startsWith("image") ? "🖼️" : "🎥"} {f.name}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setMediaFiles(
+                        mediaFiles.filter((_, idx) => idx !== i)
+                      )
+                    }
+                    className="text-red-500"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* FEATURES */}
         <h3 className="font-semibold mt-8">Features</h3>
-
         {form.features.map((f, i) => (
           <div key={i} className="flex gap-2 mt-2">
             <Input
               value={f}
-              onChange={(e) => handleFeatureChange(i, e.target.value)}
-              placeholder={`Feature ${i + 1}`}
+              onChange={(e) =>
+                handleFeatureChange(i, e.target.value)
+              }
             />
             <Button variant="destructive" onClick={() => removeFeature(i)}>
               ✕
@@ -222,8 +275,12 @@ export default function EditProduct() {
           + Add Feature
         </Button>
 
-        <Button className="mt-8" onClick={saveProduct}>
-          Save Changes
+        <Button
+          className={`mt-8 ${saving ? "animate-pulse" : ""}`}
+          onClick={saveProduct}
+          disabled={saving}
+        >
+          {saving ? "Saving..." : "Save Changes"}
         </Button>
       </div>
     </Layout>

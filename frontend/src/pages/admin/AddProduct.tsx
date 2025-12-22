@@ -11,7 +11,7 @@ export default function AddProduct() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  // ✅ Multiple images + videos
+  // ✅ media files ADD, not replace
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
 
   const [form, setForm] = useState({
@@ -56,8 +56,10 @@ export default function AddProduct() {
   };
 
   const removeFeature = (i: number) => {
-    const updated = form.features.filter((_, idx) => idx !== i);
-    setForm({ ...form, features: updated });
+    setForm({
+      ...form,
+      features: form.features.filter((_, idx) => idx !== i),
+    });
   };
 
   // ===============================
@@ -94,15 +96,11 @@ export default function AddProduct() {
 
       if (data.success) {
         setSuccess(true);
-
-        // 🔁 Redirect after short delay
-        setTimeout(() => {
-          navigate("/admin");
-        }, 1500);
+        setTimeout(() => navigate("/admin"), 1500);
       } else {
         alert(data.message || "Failed to add product");
       }
-    } catch (err) {
+    } catch {
       alert("Failed to add product");
     } finally {
       setLoading(false);
@@ -118,27 +116,23 @@ export default function AddProduct() {
           onSubmit={handleSubmit}
           className="bg-white rounded-xl shadow-lg p-8 space-y-8"
         >
-          {/* SUCCESS MESSAGE */}
+          {/* SUCCESS */}
           {success && (
-            <div className="p-4 bg-green-100 text-green-700 rounded-md animate-fade-in">
+            <div className="p-4 bg-green-100 text-green-700 rounded-md">
               ✅ Product added successfully!
             </div>
           )}
 
           {/* BASIC INFO */}
           <section>
-            <h2 className="text-xl font-semibold mb-4">Basic Information</h2>
+            <h2 className="text-xl font-semibold mb-4">
+              Basic Information
+            </h2>
             <div className="grid md:grid-cols-2 gap-4">
               <Input name="name" placeholder="Product Name" onChange={handleChange} required />
               <Input name="model" placeholder="Model" onChange={handleChange} required />
               <Input name="category" placeholder="Category" onChange={handleChange} required />
-              <Input
-                name="price"
-                type="number"
-                placeholder="Price (₹)"
-                onChange={handleChange}
-                required
-              />
+              <Input name="price" type="number" placeholder="Price (₹)" onChange={handleChange} required />
             </div>
 
             <Textarea
@@ -154,31 +148,44 @@ export default function AddProduct() {
           <section>
             <h2 className="text-xl font-semibold mb-2">Product Media</h2>
             <p className="text-sm text-gray-500 mb-3">
-              Upload multiple images and optional video (MP4 recommended)
+              You can select files multiple times. Images & videos will be added.
             </p>
 
             <Input
               type="file"
               multiple
               accept="image/*,video/*"
-              onChange={(e) =>
-                setMediaFiles(Array.from(e.target.files || []))
-              }
-              required
+              onChange={(e) => {
+                if (!e.target.files) return;
+                setMediaFiles((prev) => [
+                  ...prev,
+                  ...Array.from(e.target.files),
+                ]);
+              }}
             />
 
             {/* FILE LIST */}
             {mediaFiles.length > 0 && (
-              <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
+              <div className="mt-4 space-y-2 text-sm">
                 {mediaFiles.map((file, i) => (
                   <div
                     key={i}
-                    className="border rounded p-2 flex items-center gap-2"
+                    className="flex justify-between items-center border p-2 rounded"
                   >
-                    <span>
-                      {file.type.startsWith("image") ? "🖼️" : "🎥"}
+                    <span className="truncate">
+                      {file.type.startsWith("image") ? "🖼️" : "🎥"} {file.name}
                     </span>
-                    <span className="truncate">{file.name}</span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setMediaFiles(
+                          mediaFiles.filter((_, idx) => idx !== i)
+                        )
+                      }
+                      className="text-red-500"
+                    >
+                      ✕
+                    </button>
                   </div>
                 ))}
               </div>
@@ -187,7 +194,9 @@ export default function AddProduct() {
 
           {/* TECH SPECS */}
           <section>
-            <h2 className="text-xl font-semibold mb-4">Technical Specifications</h2>
+            <h2 className="text-xl font-semibold mb-4">
+              Technical Specifications
+            </h2>
             <div className="grid md:grid-cols-3 gap-4">
               <Input name="bladeLength" placeholder="Blade Length" onChange={handleSpecsChange} />
               <Input name="power" placeholder="Power" onChange={handleSpecsChange} />
