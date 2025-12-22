@@ -4,13 +4,17 @@ const multer = require("multer");
 const Product = require("../models/Product");
 const { storage } = require("../config/cloudinary");
 
-// Multer config
+// =========================
+// Multer config (Images + Videos)
+// =========================
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB for videos
 });
 
+// =========================
 // Safe parsers
+// =========================
 const parseObject = (value) => {
   try {
     if (!value) return {};
@@ -31,11 +35,32 @@ const parseArray = (value) => {
   }
 };
 
+// =========================
 // ➕ ADD PRODUCT
-router.post("/", upload.single("image"), async (req, res) => {
+// =========================
+router.post("/", upload.array("media", 10), async (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ success: false, message: "Image required" });
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "At least one image is required",
+      });
+    }
+
+    // Build media array
+    const media = req.files.map((file) => ({
+      url: file.path,
+      public_id: file.filename,
+      type: file.mimetype.startsWith("video") ? "video" : "image",
+    }));
+
+    // First image → imageUrl (BACKWARD COMPATIBILITY)
+    const firstImage = media.find((m) => m.type === "image");
+    if (!firstImage) {
+      return res.status(400).json({
+        success: false,
+        message: "At least one image is required",
+      });
     }
 
     const product = await Product.create({
@@ -44,7 +69,8 @@ router.post("/", upload.single("image"), async (req, res) => {
       category: req.body.category,
       shortDesc: req.body.shortDesc,
       price: Number(req.body.price) || 0,
-      imageUrl: req.file.path,
+      imageUrl: firstImage.url, // 🔴 KEEP OLD UI WORKING
+      media, // ✅ NEW (images + videos)
       specs: parseObject(req.body.specs),
       features: parseArray(req.body.features),
     });
@@ -55,8 +81,10 @@ router.post("/", upload.single("image"), async (req, res) => {
   }
 });
 
+// =========================
 // ✏️ UPDATE PRODUCT
-router.put("/:id", upload.single("image"), async (req, res) => {
+// =========================
+router.put("/:id", upload.array("media", 10), async (req, res) => {
   try {
     const updateData = {
       name: req.body.name,
@@ -68,7 +96,21 @@ router.put("/:id", upload.single("image"), async (req, res) => {
       features: parseArray(req.body.features),
     };
 
-    if (req.file) updateData.imageUrl = req.file.path;
+    if (req.files && req.files.length > 0) {
+      const media = req.files.map((file) => ({
+        url: file.path,
+        public_id: file.filename,
+        type: file.mimetype.startsWith("video") ? "video" : "image",
+      }));
+
+      updateData.media = media;
+
+      // Update imageUrl if a new image exists
+      const firstImage = media.find((m) => m.type === "image");
+      if (firstImage) {
+        updateData.imageUrl = firstImage.url;
+      }
+    }
 
     const product = await Product.findByIdAndUpdate(
       req.params.id,
@@ -82,7 +124,9 @@ router.put("/:id", upload.single("image"), async (req, res) => {
   }
 });
 
+// =========================
 // 📄 GET ALL PRODUCTS
+// =========================
 router.get("/", async (req, res) => {
   try {
     const products = await Product.find().sort({ createdAt: -1 });
@@ -92,20 +136,28 @@ router.get("/", async (req, res) => {
   }
 });
 
-// 📄 GET SINGLE PRODUCT (FOR EDIT PAGE)
+// =========================
+// 📄 GET SINGLE PRODUCT
+// =========================
 router.get("/:id", async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) {
-      return res.status(404).json({ success: false, message: "Not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Not found" });
     }
     res.json({ success: true, product });
   } catch {
-    res.status(500).json({ success: false, message: "Failed to fetch product" });
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch product" });
   }
 });
 
+// =========================
 // 🗑 DELETE PRODUCT
+// =========================
 router.delete("/:id", async (req, res) => {
   try {
     await Product.findByIdAndDelete(req.params.id);

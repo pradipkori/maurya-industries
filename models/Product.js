@@ -34,12 +34,33 @@ const productSchema = new mongoose.Schema(
     },
 
     // =========================
-    // Image (Cloudinary URL)
+    // MAIN IMAGE (Backward Compatibility)
     // =========================
     imageUrl: {
       type: String,
-      required: true, // 🔴 IMPORTANT
+      required: true, // 🔴 KEEPING THIS SO NOTHING BREAKS
     },
+
+    // =========================
+    // MEDIA (Images + Videos)
+    // =========================
+    media: [
+      {
+        url: {
+          type: String,
+          required: true,
+        },
+        type: {
+          type: String,
+          enum: ["image", "video"],
+          required: true,
+        },
+        public_id: {
+          type: String,
+          default: "",
+        },
+      },
+    ],
 
     // =========================
     // Technical Specifications
