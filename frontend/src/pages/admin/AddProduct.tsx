@@ -9,9 +9,9 @@ export default function AddProduct() {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
 
-  // ✅ media files ADD, not replace
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
 
   const [form, setForm] = useState({
@@ -68,7 +68,7 @@ export default function AddProduct() {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     setLoading(true);
-    setSuccess(false);
+    setToast(null);
 
     const formData = new FormData();
     formData.append("name", form.name);
@@ -95,13 +95,17 @@ export default function AddProduct() {
       const data = await res.json();
 
       if (data.success) {
-        setSuccess(true);
-        setTimeout(() => navigate("/admin"), 1500);
+        setToast("✅ Product added successfully");
+        setShowSuccessModal(true);
+
+        setTimeout(() => {
+          navigate("/admin");
+        }, 2500);
       } else {
-        alert(data.message || "Failed to add product");
+        setToast(data.message || "❌ Failed to add product");
       }
     } catch {
-      alert("Failed to add product");
+      setToast("❌ Server error");
     } finally {
       setLoading(false);
     }
@@ -109,6 +113,41 @@ export default function AddProduct() {
 
   return (
     <Layout>
+      {/* 🔥 FULL PAGE LOADING OVERLAY */}
+      {loading && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
+          <div className="bg-white rounded-xl p-6 flex flex-col items-center gap-4 animate-fade-in">
+            <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <p className="font-medium">Adding product…</p>
+          </div>
+        </div>
+      )}
+
+      {/* 🔔 TOAST */}
+      {toast && (
+        <div className="fixed top-6 right-6 z-50 bg-black text-white px-4 py-3 rounded shadow-lg animate-fade-in">
+          {toast}
+        </div>
+      )}
+
+      {/* 🎉 SUCCESS MODAL */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-40 bg-black/50 flex items-center justify-center">
+          <div className="bg-white rounded-xl p-8 w-full max-w-md text-center animate-fade-in">
+            <div className="text-4xl mb-4">🎉</div>
+            <h2 className="text-xl font-semibold mb-2">
+              Product Added Successfully
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Redirecting to dashboard…
+            </p>
+            <Button disabled className="w-full">
+              Please wait
+            </Button>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-5xl mx-auto p-8">
         <h1 className="text-3xl font-bold mb-8">Add New Product</h1>
 
@@ -116,18 +155,9 @@ export default function AddProduct() {
           onSubmit={handleSubmit}
           className="bg-white rounded-xl shadow-lg p-8 space-y-8"
         >
-          {/* SUCCESS */}
-          {success && (
-            <div className="p-4 bg-green-100 text-green-700 rounded-md">
-              ✅ Product added successfully!
-            </div>
-          )}
-
           {/* BASIC INFO */}
           <section>
-            <h2 className="text-xl font-semibold mb-4">
-              Basic Information
-            </h2>
+            <h2 className="text-xl font-semibold mb-4">Basic Information</h2>
             <div className="grid md:grid-cols-2 gap-4">
               <Input name="name" placeholder="Product Name" onChange={handleChange} required />
               <Input name="model" placeholder="Model" onChange={handleChange} required />
@@ -147,9 +177,6 @@ export default function AddProduct() {
           {/* MEDIA */}
           <section>
             <h2 className="text-xl font-semibold mb-2">Product Media</h2>
-            <p className="text-sm text-gray-500 mb-3">
-              You can select files multiple times. Images & videos will be added.
-            </p>
 
             <Input
               type="file"
@@ -164,23 +191,17 @@ export default function AddProduct() {
               }}
             />
 
-            {/* FILE LIST */}
             {mediaFiles.length > 0 && (
               <div className="mt-4 space-y-2 text-sm">
                 {mediaFiles.map((file, i) => (
-                  <div
-                    key={i}
-                    className="flex justify-between items-center border p-2 rounded"
-                  >
-                    <span className="truncate">
+                  <div key={i} className="flex justify-between border p-2 rounded">
+                    <span>
                       {file.type.startsWith("image") ? "🖼️" : "🎥"} {file.name}
                     </span>
                     <button
                       type="button"
                       onClick={() =>
-                        setMediaFiles(
-                          mediaFiles.filter((_, idx) => idx !== i)
-                        )
+                        setMediaFiles(mediaFiles.filter((_, idx) => idx !== i))
                       }
                       className="text-red-500"
                     >
@@ -190,21 +211,6 @@ export default function AddProduct() {
                 ))}
               </div>
             )}
-          </section>
-
-          {/* TECH SPECS */}
-          <section>
-            <h2 className="text-xl font-semibold mb-4">
-              Technical Specifications
-            </h2>
-            <div className="grid md:grid-cols-3 gap-4">
-              <Input name="bladeLength" placeholder="Blade Length" onChange={handleSpecsChange} />
-              <Input name="power" placeholder="Power" onChange={handleSpecsChange} />
-              <Input name="capacity" placeholder="Capacity" onChange={handleSpecsChange} />
-              <Input name="throatSize" placeholder="Throat Size" onChange={handleSpecsChange} />
-              <Input name="rotorSpeed" placeholder="Rotor Speed" onChange={handleSpecsChange} />
-              <Input name="weight" placeholder="Weight" onChange={handleSpecsChange} />
-            </div>
           </section>
 
           {/* FEATURES */}
@@ -237,13 +243,8 @@ export default function AddProduct() {
 
           {/* SUBMIT */}
           <div className="flex justify-end">
-            <Button
-              type="submit"
-              variant="industrial"
-              disabled={loading}
-              className={loading ? "animate-pulse" : ""}
-            >
-              {loading ? "Adding product..." : "Add Product"}
+            <Button type="submit" variant="industrial">
+              Add Product
             </Button>
           </div>
         </form>

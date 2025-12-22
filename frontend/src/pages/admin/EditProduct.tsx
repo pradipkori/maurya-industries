@@ -16,13 +16,16 @@ export default function EditProduct() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [success, setSuccess] = useState(false);
 
-  // ✅ Existing media from DB
+  const [toast, setToast] = useState<string | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  // Existing + new media
   const [existingMedia, setExistingMedia] = useState<MediaItem[]>([]);
-
-  // ✅ Newly selected files
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
+
+  // Delete confirmation
+  const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -106,11 +109,11 @@ export default function EditProduct() {
   };
 
   // ===============================
-  // SAVE
+  // SAVE PRODUCT
   // ===============================
   const saveProduct = async () => {
     setSaving(true);
-    setSuccess(false);
+    setToast(null);
 
     const formData = new FormData();
     formData.append("name", form.name);
@@ -120,7 +123,10 @@ export default function EditProduct() {
     formData.append("specs", JSON.stringify(form.specs));
     formData.append("features", JSON.stringify(form.features));
 
-    // ✅ append (not replace)
+    // send remaining existing media URLs as JSON
+    formData.append("existingMedia", JSON.stringify(existingMedia));
+
+    // append new files
     mediaFiles.forEach((file) => {
       formData.append("media", file);
     });
@@ -135,14 +141,16 @@ export default function EditProduct() {
       );
 
       const data = await res.json();
+
       if (data.success) {
-        setSuccess(true);
-        setTimeout(() => navigate("/admin"), 1500);
+        setToast("✅ Product updated successfully");
+        setShowSuccessModal(true);
+        setTimeout(() => navigate("/admin"), 2500);
       } else {
-        alert("Failed to update product");
+        setToast("❌ Failed to update product");
       }
     } catch {
-      alert("Server error");
+      setToast("❌ Server error");
     } finally {
       setSaving(false);
     }
@@ -155,7 +163,7 @@ export default function EditProduct() {
     return (
       <Layout>
         <div className="p-10 text-center animate-pulse">
-          Loading product...
+          Loading product…
         </div>
       </Layout>
     );
@@ -166,14 +174,73 @@ export default function EditProduct() {
   // ===============================
   return (
     <Layout>
+      {/* FULL PAGE LOADING */}
+      {saving && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-xl flex flex-col items-center gap-4 animate-fade-in">
+            <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <p>Saving changes…</p>
+          </div>
+        </div>
+      )}
+
+      {/* TOAST */}
+      {toast && (
+        <div className="fixed top-6 right-6 z-50 bg-black text-white px-4 py-3 rounded animate-fade-in">
+          {toast}
+        </div>
+      )}
+
+      {/* SUCCESS MODAL */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-40 bg-black/50 flex items-center justify-center">
+          <div className="bg-white p-8 rounded-xl text-center animate-fade-in">
+            <div className="text-4xl mb-4">🎉</div>
+            <h2 className="text-xl font-semibold mb-2">
+              Product Updated
+            </h2>
+            <p className="text-gray-600">
+              Redirecting to dashboard…
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE CONFIRMATION */}
+      {deleteIndex !== null && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-xl animate-fade-in">
+            <h3 className="text-lg font-semibold mb-3">
+              Delete this media?
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+              This action cannot be undone.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setDeleteIndex(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  setExistingMedia(
+                    existingMedia.filter((_, i) => i !== deleteIndex)
+                  );
+                  setDeleteIndex(null);
+                }}
+              >
+                Delete
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-5xl mx-auto p-10">
         <h1 className="text-3xl font-bold mb-8">Edit Product</h1>
-
-        {success && (
-          <div className="mb-4 p-4 bg-green-100 text-green-700 rounded">
-            ✅ Product updated successfully!
-          </div>
-        )}
 
         {/* BASIC */}
         <div className="grid md:grid-cols-3 gap-6">
@@ -208,44 +275,16 @@ export default function EditProduct() {
           {/* EXISTING MEDIA */}
           {existingMedia.length > 0 && (
             <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
-              {existingMedia.map((m, i) =>
-                m.type === "image" ? (
-                  <img
-                    key={i}
-                    src={m.url}
-                    className="w-full h-40 object-cover rounded border"
-                  />
-                ) : (
-                  <video
-                    key={i}
-                    src={m.url}
-                    controls
-                    className="w-full h-40 rounded border"
-                  />
-                )
-              )}
-            </div>
-          )}
-
-          {/* NEW FILES */}
-          {mediaFiles.length > 0 && (
-            <div className="mt-4 space-y-2 text-sm">
-              {mediaFiles.map((f, i) => (
-                <div
-                  key={i}
-                  className="flex justify-between items-center border p-2 rounded"
-                >
-                  <span>
-                    {f.type.startsWith("image") ? "🖼️" : "🎥"} {f.name}
-                  </span>
+              {existingMedia.map((m, i) => (
+                <div key={i} className="relative">
+                  {m.type === "image" ? (
+                    <img src={m.url} className="h-40 w-full object-cover rounded border" />
+                  ) : (
+                    <video src={m.url} controls className="h-40 w-full rounded border" />
+                  )}
                   <button
-                    type="button"
-                    onClick={() =>
-                      setMediaFiles(
-                        mediaFiles.filter((_, idx) => idx !== i)
-                      )
-                    }
-                    className="text-red-500"
+                    onClick={() => setDeleteIndex(i)}
+                    className="absolute top-2 right-2 bg-red-600 text-white rounded-full px-2"
                   >
                     ✕
                   </button>
@@ -276,11 +315,11 @@ export default function EditProduct() {
         </Button>
 
         <Button
-          className={`mt-8 ${saving ? "animate-pulse" : ""}`}
+          className="mt-8"
           onClick={saveProduct}
           disabled={saving}
         >
-          {saving ? "Saving..." : "Save Changes"}
+          Save Changes
         </Button>
       </div>
     </Layout>
