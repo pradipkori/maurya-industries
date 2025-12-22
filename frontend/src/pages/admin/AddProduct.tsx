@@ -9,13 +9,15 @@ export default function AddProduct() {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
-  const [image, setImage] = useState<File | null>(null);
+
+  // ✅ FIX: support multiple images + videos
+  const [mediaFiles, setMediaFiles] = useState<File[]>([]);
 
   const [form, setForm] = useState({
     name: "",
     model: "",
     category: "",
-    price: "", // ✅ PRICE ADDED
+    price: "",
     shortDesc: "",
     specs: {
       bladeLength: "",
@@ -66,11 +68,15 @@ export default function AddProduct() {
     formData.append("name", form.name);
     formData.append("model", form.model);
     formData.append("category", form.category);
-    formData.append("price", form.price); // ✅ SEND PRICE
+    formData.append("price", form.price);
     formData.append("shortDesc", form.shortDesc);
     formData.append("specs", JSON.stringify(form.specs));
     formData.append("features", JSON.stringify(form.features));
-    if (image) formData.append("image", image);
+
+    // ✅ FIX: send media (images + videos)
+    mediaFiles.forEach((file) => {
+      formData.append("media", file);
+    });
 
     try {
       const res = await fetch(
@@ -126,10 +132,20 @@ export default function AddProduct() {
             />
           </section>
 
-          {/* IMAGE */}
+          {/* MEDIA */}
           <section>
-            <h2 className="text-xl font-semibold mb-4">Product Image</h2>
-            <Input type="file" accept="image/*" onChange={(e) => setImage(e.target.files?.[0] || null)} />
+            <h2 className="text-xl font-semibold mb-4">Product Media</h2>
+
+            {/* ✅ FIX: multiple images + videos */}
+            <Input
+              type="file"
+              multiple
+              accept="image/*,video/*"
+              onChange={(e) =>
+                setMediaFiles(Array.from(e.target.files || []))
+              }
+              required
+            />
           </section>
 
           {/* TECH SPECS */}
