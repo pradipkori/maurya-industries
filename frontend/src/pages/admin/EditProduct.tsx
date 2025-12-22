@@ -10,7 +10,9 @@ export default function EditProduct() {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
-  const [image, setImage] = useState<File | null>(null);
+
+  // ✅ FIX: support multiple images + videos
+  const [mediaFiles, setMediaFiles] = useState<File[]>([]);
   const [imageUrl, setImageUrl] = useState("");
 
   const [form, setForm] = useState({
@@ -55,6 +57,7 @@ export default function EditProduct() {
             features: data.product.features || [],
           });
 
+          // Keep existing main image
           setImageUrl(data.product.imageUrl || "");
         }
       })
@@ -105,9 +108,10 @@ export default function EditProduct() {
     formData.append("specs", JSON.stringify(form.specs));
     formData.append("features", JSON.stringify(form.features));
 
-    if (image) {
-      formData.append("image", image);
-    }
+    // ✅ FIX: send media files (images + videos)
+    mediaFiles.forEach((file) => {
+      formData.append("media", file);
+    });
 
     try {
       const res = await fetch(
@@ -165,14 +169,18 @@ export default function EditProduct() {
           onChange={(e) => setForm({ ...form, shortDesc: e.target.value })}
         />
 
-        {/* IMAGE */}
+        {/* MEDIA */}
         <div className="mt-6">
           <Input
             type="file"
-            accept="image/*"
-            onChange={(e) => setImage(e.target.files?.[0] || null)}
+            multiple
+            accept="image/*,video/*"
+            onChange={(e) =>
+              setMediaFiles(Array.from(e.target.files || []))
+            }
           />
 
+          {/* Existing image preview */}
           {imageUrl && (
             <img
               src={imageUrl}
