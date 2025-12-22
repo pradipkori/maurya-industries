@@ -4,7 +4,7 @@ const multer = require("multer");
 const Product = require("../models/Product");
 const { storage } = require("../config/cloudinary");
 
-// 🔴 VERY IMPORTANT: add file size limit (Render-safe)
+// 🔴 Render-safe upload config
 const upload = multer({
   storage,
   limits: {
@@ -67,7 +67,11 @@ router.post("/", upload.single("image"), async (req, res) => {
       model: req.body.model?.trim(),
       category: req.body.category?.trim(),
       shortDesc: req.body.shortDesc?.trim(),
-      imageUrl: req.file.path, // Cloudinary URL
+
+      // ✅ PRICE FIX
+      price: Number(req.body.price) || 0,
+
+      imageUrl: req.file.path,
       specs: parseObject(req.body.specs),
       features: parseArray(req.body.features),
     });
@@ -97,6 +101,10 @@ router.put("/:id", upload.single("image"), async (req, res) => {
       model: req.body.model?.trim(),
       category: req.body.category?.trim(),
       shortDesc: req.body.shortDesc?.trim(),
+
+      // ✅ PRICE FIX
+      price: Number(req.body.price) || 0,
+
       specs: parseObject(req.body.specs),
       features: parseArray(req.body.features),
     };
@@ -111,10 +119,10 @@ router.put("/:id", upload.single("image"), async (req, res) => {
       { new: true }
     );
 
-    res.json({ success: true, product });
+    return res.json({ success: true, product });
   } catch (error) {
     console.error("🔥 UPDATE PRODUCT ERROR:", error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message,
     });
@@ -127,9 +135,9 @@ router.put("/:id", upload.single("image"), async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     await Product.findByIdAndDelete(req.params.id);
-    res.json({ success: true });
+    return res.json({ success: true });
   } catch (error) {
-    res.status(500).json({ success: false });
+    return res.status(500).json({ success: false });
   }
 });
 
@@ -139,9 +147,9 @@ router.delete("/:id", async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     const products = await Product.find().sort({ createdAt: -1 });
-    res.json({ success: true, products });
+    return res.json({ success: true, products });
   } catch (error) {
-    res.status(500).json({ success: false });
+    return res.status(500).json({ success: false });
   }
 });
 
