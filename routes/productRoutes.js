@@ -1,159 +1,118 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { Layout } from "@/components/layout/Layout";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+const express = require("express");
+const router = express.Router();
+const multer = require("multer");
+const Product = require("../models/Product");
+const { storage } = require("../config/cloudinary");
 
-export default function EditProduct() {
-  const { id } = useParams();
-  const navigate = useNavigate();
+// Multer config
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
 
-  const [loading, setLoading] = useState(true);
-  const [image, setImage] = useState<File | null>(null);
+// Safe parsers
+const parseObject = (value) => {
+  try {
+    if (!value) return {};
+    if (typeof value === "string") return JSON.parse(value);
+    return value;
+  } catch {
+    return {};
+  }
+};
 
-  const [form, setForm] = useState({
-    name: "",
-    model: "",
-    category: "",
-    shortDesc: "",
-    price: "",
-    specs: {
-      bladeLength: "",
-      power: "",
-      capacity: "",
-      throatSize: "",
-      rotorSpeed: "",
-      weight: "",
-    },
-    features: [] as string[],
-  });
+const parseArray = (value) => {
+  try {
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+    return JSON.parse(value);
+  } catch {
+    return [];
+  }
+};
 
-  // ✅ LOAD PRODUCT
-  useEffect(() => {
-    if (!id) return;
-
-    fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          setForm({
-            name: data.product.name || "",
-            model: data.product.model || "",
-            category: data.product.category || "",
-            shortDesc: data.product.shortDesc || "",
-            price: data.product.price?.toString() || "",
-            specs: {
-              bladeLength: data.product.specs?.bladeLength || "",
-              power: data.product.specs?.power || "",
-              capacity: data.product.specs?.capacity || "",
-              throatSize: data.product.specs?.throatSize || "",
-              rotorSpeed: data.product.specs?.rotorSpeed || "",
-              weight: data.product.specs?.weight || "",
-            },
-            features: data.product.features || [],
-          });
-        }
-      })
-      .finally(() => setLoading(false));
-  }, [id]);
-
-  // ✅ SAVE
-  const handleSubmit = async (e: any) => {
-    e.preventDefault();
-
-    const formData = new FormData();
-    formData.append("name", form.name);
-    formData.append("model", form.model);
-    formData.append("category", form.category);
-    formData.append("shortDesc", form.shortDesc);
-    formData.append("price", form.price);
-    formData.append("specs", JSON.stringify(form.specs));
-    formData.append("features", JSON.stringify(form.features));
-
-    if (image) {
-      formData.append("image", image);
+// ➕ ADD PRODUCT
+router.post("/", upload.single("image"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "Image required" });
     }
 
-    await fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`, {
-      method: "PUT",
-      body: formData,
+    const product = await Product.create({
+      name: req.body.name,
+      model: req.body.model,
+      category: req.body.category,
+      shortDesc: req.body.shortDesc,
+      price: Number(req.body.price) || 0,
+      imageUrl: req.file.path,
+      specs: parseObject(req.body.specs),
+      features: parseArray(req.body.features),
     });
 
-    navigate("/admin");
-  };
-
-  if (loading) {
-    return (
-      <Layout>
-        <div className="p-10 text-center">Loading product...</div>
-      </Layout>
-    );
+    res.status(201).json({ success: true, product });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
   }
+});
 
-  return (
-    <Layout>
-      <div className="max-w-5xl mx-auto p-10">
-        <h1 className="text-3xl font-bold mb-8">Edit Product</h1>
+// ✏️ UPDATE PRODUCT
+router.put("/:id", upload.single("image"), async (req, res) => {
+  try {
+    const updateData = {
+      name: req.body.name,
+      model: req.body.model,
+      category: req.body.category,
+      shortDesc: req.body.shortDesc,
+      price: Number(req.body.price) || 0,
+      specs: parseObject(req.body.specs),
+      features: parseArray(req.body.features),
+    };
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid md:grid-cols-3 gap-4">
-            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Product Name" />
-            <Input value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })} placeholder="Model" />
-            <Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="Category" />
-          </div>
+    if (req.file) updateData.imageUrl = req.file.path;
 
-          <Textarea value={form.shortDesc} onChange={(e) => setForm({ ...form, shortDesc: e.target.value })} placeholder="Short Description" />
+    const product = await Product.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true }
+    );
 
-          <Input value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="Price" type="number" />
+    res.json({ success: true, product });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
 
-          <Input type="file" onChange={(e) => setImage(e.target.files?.[0] || null)} />
+// 📄 GET ALL PRODUCTS
+router.get("/", async (req, res) => {
+  try {
+    const products = await Product.find().sort({ createdAt: -1 });
+    res.json({ success: true, products });
+  } catch {
+    res.status(500).json({ success: false });
+  }
+});
 
-          <h3 className="font-bold">Technical Specifications</h3>
+// 📄 GET SINGLE PRODUCT (FOR EDIT PAGE)
+router.get("/:id", async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Not found" });
+    }
+    res.json({ success: true, product });
+  } catch {
+    res.status(500).json({ success: false, message: "Failed to fetch product" });
+  }
+});
 
-          <div className="grid md:grid-cols-3 gap-4">
-            {Object.entries(form.specs).map(([key, value]) => (
-              <Input
-                key={key}
-                placeholder={key}
-                value={value}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    specs: { ...form.specs, [key]: e.target.value },
-                  })
-                }
-              />
-            ))}
-          </div>
+// 🗑 DELETE PRODUCT
+router.delete("/:id", async (req, res) => {
+  try {
+    await Product.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch {
+    res.status(500).json({ success: false });
+  }
+});
 
-          <h3 className="font-bold">Features</h3>
-
-          {form.features.map((f, i) => (
-            <Input
-              key={i}
-              value={f}
-              onChange={(e) => {
-                const updated = [...form.features];
-                updated[i] = e.target.value;
-                setForm({ ...form, features: updated });
-              }}
-            />
-          ))}
-
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setForm({ ...form, features: [...form.features, ""] })}
-          >
-            + Add Feature
-          </Button>
-
-          <Button type="submit" variant="industrial">
-            Save Changes
-          </Button>
-        </form>
-      </div>
-    </Layout>
-  );
-}
+module.exports = router;
