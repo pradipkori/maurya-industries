@@ -9,8 +9,9 @@ export default function AddProduct() {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
-  // ✅ FIX: support multiple images + videos
+  // ✅ Multiple images + videos
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
 
   const [form, setForm] = useState({
@@ -30,12 +31,13 @@ export default function AddProduct() {
     features: [""],
   });
 
-  // 🔹 Handle basic fields
+  // ===============================
+  // HANDLERS
+  // ===============================
   const handleChange = (e: any) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // 🔹 Handle specs
   const handleSpecsChange = (e: any) => {
     setForm({
       ...form,
@@ -43,7 +45,6 @@ export default function AddProduct() {
     });
   };
 
-  // 🔹 Handle features
   const handleFeatureChange = (i: number, value: string) => {
     const updated = [...form.features];
     updated[i] = value;
@@ -59,10 +60,13 @@ export default function AddProduct() {
     setForm({ ...form, features: updated });
   };
 
-  // 🔹 Submit
+  // ===============================
+  // SUBMIT
+  // ===============================
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     setLoading(true);
+    setSuccess(false);
 
     const formData = new FormData();
     formData.append("name", form.name);
@@ -73,7 +77,6 @@ export default function AddProduct() {
     formData.append("specs", JSON.stringify(form.specs));
     formData.append("features", JSON.stringify(form.features));
 
-    // ✅ FIX: send media (images + videos)
     mediaFiles.forEach((file) => {
       formData.append("media", file);
     });
@@ -88,8 +91,14 @@ export default function AddProduct() {
       );
 
       const data = await res.json();
+
       if (data.success) {
-        navigate("/admin");
+        setSuccess(true);
+
+        // 🔁 Redirect after short delay
+        setTimeout(() => {
+          navigate("/admin");
+        }, 1500);
       } else {
         alert(data.message || "Failed to add product");
       }
@@ -109,6 +118,13 @@ export default function AddProduct() {
           onSubmit={handleSubmit}
           className="bg-white rounded-xl shadow-lg p-8 space-y-8"
         >
+          {/* SUCCESS MESSAGE */}
+          {success && (
+            <div className="p-4 bg-green-100 text-green-700 rounded-md animate-fade-in">
+              ✅ Product added successfully!
+            </div>
+          )}
+
           {/* BASIC INFO */}
           <section>
             <h2 className="text-xl font-semibold mb-4">Basic Information</h2>
@@ -128,15 +144,19 @@ export default function AddProduct() {
             <Textarea
               className="mt-4"
               placeholder="Short Description"
-              onChange={(e) => setForm({ ...form, shortDesc: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, shortDesc: e.target.value })
+              }
             />
           </section>
 
           {/* MEDIA */}
           <section>
-            <h2 className="text-xl font-semibold mb-4">Product Media</h2>
+            <h2 className="text-xl font-semibold mb-2">Product Media</h2>
+            <p className="text-sm text-gray-500 mb-3">
+              Upload multiple images and optional video (MP4 recommended)
+            </p>
 
-            {/* ✅ FIX: multiple images + videos */}
             <Input
               type="file"
               multiple
@@ -146,6 +166,23 @@ export default function AddProduct() {
               }
               required
             />
+
+            {/* FILE LIST */}
+            {mediaFiles.length > 0 && (
+              <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
+                {mediaFiles.map((file, i) => (
+                  <div
+                    key={i}
+                    className="border rounded p-2 flex items-center gap-2"
+                  >
+                    <span>
+                      {file.type.startsWith("image") ? "🖼️" : "🎥"}
+                    </span>
+                    <span className="truncate">{file.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </section>
 
           {/* TECH SPECS */}
@@ -170,9 +207,15 @@ export default function AddProduct() {
                 <Input
                   value={f}
                   placeholder={`Feature ${i + 1}`}
-                  onChange={(e) => handleFeatureChange(i, e.target.value)}
+                  onChange={(e) =>
+                    handleFeatureChange(i, e.target.value)
+                  }
                 />
-                <Button type="button" variant="destructive" onClick={() => removeFeature(i)}>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={() => removeFeature(i)}
+                >
                   ✕
                 </Button>
               </div>
@@ -185,8 +228,13 @@ export default function AddProduct() {
 
           {/* SUBMIT */}
           <div className="flex justify-end">
-            <Button type="submit" variant="industrial" disabled={loading}>
-              {loading ? "Saving..." : "Add Product"}
+            <Button
+              type="submit"
+              variant="industrial"
+              disabled={loading}
+              className={loading ? "animate-pulse" : ""}
+            >
+              {loading ? "Adding product..." : "Add Product"}
             </Button>
           </div>
         </form>

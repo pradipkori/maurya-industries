@@ -5,11 +5,11 @@ const Product = require("../models/Product");
 const { storage } = require("../config/cloudinary");
 
 // =========================
-// Multer config (Images + Videos)
+// Multer config
 // =========================
 const upload = multer({
   storage,
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB for videos
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
 });
 
 // =========================
@@ -36,7 +36,7 @@ const parseArray = (value) => {
 };
 
 // =========================
-// ➕ ADD PRODUCT
+// ➕ ADD PRODUCT (MULTIPLE IMAGES + VIDEOS)
 // =========================
 router.post("/", upload.array("media", 10), async (req, res) => {
   try {
@@ -47,14 +47,12 @@ router.post("/", upload.array("media", 10), async (req, res) => {
       });
     }
 
-    // Build media array
     const media = req.files.map((file) => ({
       url: file.path,
       public_id: file.filename,
       type: file.mimetype.startsWith("video") ? "video" : "image",
     }));
 
-    // First image → imageUrl (BACKWARD COMPATIBILITY)
     const firstImage = media.find((m) => m.type === "image");
     if (!firstImage) {
       return res.status(400).json({
@@ -69,8 +67,8 @@ router.post("/", upload.array("media", 10), async (req, res) => {
       category: req.body.category,
       shortDesc: req.body.shortDesc,
       price: Number(req.body.price) || 0,
-      imageUrl: firstImage.url, // 🔴 KEEP OLD UI WORKING
-      media, // ✅ NEW (images + videos)
+      imageUrl: firstImage.url, // backward compatibility
+      media, // ✅ store all images + videos
       specs: parseObject(req.body.specs),
       features: parseArray(req.body.features),
     });
@@ -82,43 +80,53 @@ router.post("/", upload.array("media", 10), async (req, res) => {
 });
 
 // =========================
-// ✏️ UPDATE PRODUCT
+// ✏️ UPDATE PRODUCT (MERGE MEDIA)
 // =========================
 router.put("/:id", upload.array("media", 10), async (req, res) => {
   try {
+    const existingProduct = await Product.findById(req.params.id);
+    if (!existingProduct) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
     const updateData = {
       name: req.body.name,
       model: req.body.model,
       category: req.body.category,
       shortDesc: req.body.shortDesc,
-      price: Number(req.body.price) || 0,
+      price: Number(req.body.price) || existingProduct.price,
       specs: parseObject(req.body.specs),
       features: parseArray(req.body.features),
     };
 
+    let newMedia = [];
     if (req.files && req.files.length > 0) {
-      const media = req.files.map((file) => ({
+      newMedia = req.files.map((file) => ({
         url: file.path,
         public_id: file.filename,
         type: file.mimetype.startsWith("video") ? "video" : "image",
       }));
-
-      updateData.media = media;
-
-      // Update imageUrl if a new image exists
-      const firstImage = media.find((m) => m.type === "image");
-      if (firstImage) {
-        updateData.imageUrl = firstImage.url;
-      }
     }
 
-    const product = await Product.findByIdAndUpdate(
+    // ✅ MERGE old + new media
+    updateData.media = [...(existingProduct.media || []), ...newMedia];
+
+    // Update main image only if new image uploaded
+    const newImage = newMedia.find((m) => m.type === "image");
+    if (newImage) {
+      updateData.imageUrl = newImage.url;
+    }
+
+    const updatedProduct = await Product.findByIdAndUpdate(
       req.params.id,
       updateData,
       { new: true }
     );
 
-    res.json({ success: true, product });
+    res.json({ success: true, product: updatedProduct });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -143,15 +151,11 @@ router.get("/:id", async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Not found" });
+      return res.status(404).json({ success: false, message: "Not found" });
     }
     res.json({ success: true, product });
   } catch {
-    res
-      .status(500)
-      .json({ success: false, message: "Failed to fetch product" });
+    res.status(500).json({ success: false });
   }
 });
 
