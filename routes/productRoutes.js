@@ -4,7 +4,9 @@ const multer = require("multer");
 const Product = require("../models/Product");
 const { storage } = require("../config/cloudinary");
 
-// 🔴 Render-safe upload config
+// =========================
+// Multer (Render-safe)
+// =========================
 const upload = multer({
   storage,
   limits: {
@@ -12,11 +14,9 @@ const upload = multer({
   },
 });
 
-/**
- * 🛡 SAFE PARSERS
- */
-
-// Always return object
+// =========================
+// SAFE PARSERS
+// =========================
 const parseObject = (value) => {
   try {
     if (!value) return {};
@@ -28,13 +28,10 @@ const parseObject = (value) => {
   }
 };
 
-// Always return string array
 const parseArray = (value) => {
   if (!value) return [];
 
-  if (Array.isArray(value)) {
-    return value.map(String);
-  }
+  if (Array.isArray(value)) return value.map(String);
 
   if (typeof value === "string") {
     try {
@@ -48,9 +45,9 @@ const parseArray = (value) => {
   return [];
 };
 
-/**
- * ➕ ADD PRODUCT
- */
+// =========================
+// ➕ ADD PRODUCT
+// =========================
 router.post("/", upload.single("image"), async (req, res) => {
   try {
     console.log("➡️ ADD PRODUCT HIT");
@@ -67,10 +64,7 @@ router.post("/", upload.single("image"), async (req, res) => {
       model: req.body.model?.trim(),
       category: req.body.category?.trim(),
       shortDesc: req.body.shortDesc?.trim(),
-
-      // ✅ PRICE FIX
       price: Number(req.body.price) || 0,
-
       imageUrl: req.file.path,
       specs: parseObject(req.body.specs),
       features: parseArray(req.body.features),
@@ -91,9 +85,36 @@ router.post("/", upload.single("image"), async (req, res) => {
   }
 });
 
-/**
- * ✏️ UPDATE PRODUCT
- */
+// =========================
+// 📄 GET SINGLE PRODUCT (🔥 REQUIRED FOR EDIT PAGE)
+// =========================
+router.get("/:id", async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    return res.json({
+      success: true,
+      product,
+    });
+  } catch (error) {
+    console.error("🔥 GET PRODUCT ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch product",
+    });
+  }
+});
+
+// =========================
+// ✏️ UPDATE PRODUCT
+// =========================
 router.put("/:id", upload.single("image"), async (req, res) => {
   try {
     const updateData = {
@@ -101,10 +122,7 @@ router.put("/:id", upload.single("image"), async (req, res) => {
       model: req.body.model?.trim(),
       category: req.body.category?.trim(),
       shortDesc: req.body.shortDesc?.trim(),
-
-      // ✅ PRICE FIX
       price: Number(req.body.price) || 0,
-
       specs: parseObject(req.body.specs),
       features: parseArray(req.body.features),
     };
@@ -129,9 +147,9 @@ router.put("/:id", upload.single("image"), async (req, res) => {
   }
 });
 
-/**
- * 🗑 DELETE PRODUCT
- */
+// =========================
+// 🗑 DELETE PRODUCT
+// =========================
 router.delete("/:id", async (req, res) => {
   try {
     await Product.findByIdAndDelete(req.params.id);
@@ -141,9 +159,9 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-/**
- * 📄 GET PRODUCTS
- */
+// =========================
+// 📄 GET ALL PRODUCTS (KEEP THIS LAST)
+// =========================
 router.get("/", async (req, res) => {
   try {
     const products = await Product.find().sort({ createdAt: -1 });
