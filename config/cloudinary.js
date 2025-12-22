@@ -7,7 +7,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// 🔍 PROVE ENV EXISTS (TEMP)
+// 🔍 ENV CHECK (KEEP – useful for Render logs)
 console.log("☁️ CLOUDINARY ENV", {
   cloud: !!process.env.CLOUDINARY_CLOUD_NAME,
   key: !!process.env.CLOUDINARY_API_KEY,
@@ -16,11 +16,17 @@ console.log("☁️ CLOUDINARY ENV", {
 
 const storage = new CloudinaryStorage({
   cloudinary,
-  params: async () => ({
-    folder: "maurya-products",
-    resource_type: "image",
-    allowed_formats: ["jpg", "png", "jpeg", "webp"],
-  }),
+  params: async (req, file) => {
+    const isVideo = file.mimetype.startsWith("video");
+
+    return {
+      folder: "maurya-products",
+      resource_type: isVideo ? "video" : "image", // ✅ CRITICAL FIX
+      allowed_formats: isVideo
+        ? ["mp4", "mov", "webm"]
+        : ["jpg", "jpeg", "png", "webp"],
+    };
+  },
 });
 
 module.exports = { cloudinary, storage };
