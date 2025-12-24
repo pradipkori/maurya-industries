@@ -27,6 +27,7 @@ export default function EditProduct() {
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
   const [deletedMediaIndexes, setDeletedMediaIndexes] = useState<number[]>([]);
 
+  // ✅ YOUTUBE LINKS (RESTORED)
   const [youtubeLinks, setYoutubeLinks] = useState<string[]>([]);
 
   // 🆕 BROCHURE
@@ -76,13 +77,14 @@ export default function EditProduct() {
           features: p.features || [],
         });
 
-        // ✅ MEDIA (new + legacy)
-        if (p.media && p.media.length > 0) {
+        // media
+        if (p.media?.length) {
           setExistingMedia(p.media);
         } else if (p.imageUrl) {
           setExistingMedia([{ url: p.imageUrl, type: "image" }]);
         }
 
+        // ✅ LOAD YOUTUBE VIDEOS
         setYoutubeLinks(
           (p.youtubeVideos || []).map(
             (y: YoutubeItem) =>
@@ -90,7 +92,6 @@ export default function EditProduct() {
           )
         );
 
-        // 🆕 BROCHURE
         if (p.brochureUrl) {
           setExistingBrochure(p.brochureUrl);
         }
@@ -134,6 +135,7 @@ export default function EditProduct() {
     formData.append("specs", JSON.stringify(form.specs));
     formData.append("features", JSON.stringify(form.features));
 
+    // ✅ SAVE YOUTUBE VIDEOS
     formData.append(
       "youtubeVideos",
       JSON.stringify(
@@ -151,7 +153,6 @@ export default function EditProduct() {
 
     mediaFiles.forEach((f) => formData.append("media", f));
 
-    // 🆕 BROCHURE
     if (brochureFile) {
       formData.append("brochure", brochureFile);
     }
@@ -199,33 +200,10 @@ export default function EditProduct() {
           onChange={(e) => setForm({ ...form, shortDesc: e.target.value })}
         />
 
-        {/* TECHNICAL SPECS */}
-        <h3 className="font-semibold mt-8">Technical Specifications</h3>
-        <div className="grid md:grid-cols-3 gap-4 mt-3">
-          {Object.entries(form.specs).map(([k, v]) => (
-            <Input
-              key={k}
-              placeholder={k.replace(/([A-Z])/g, " $1")}
-              value={v}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  specs: { ...form.specs, [k]: e.target.value },
-                })
-              }
-            />
-          ))}
-        </div>
-
         {/* MEDIA */}
         <div className="mt-6">
-          <Input
-            type="file"
-            multiple
-            accept="image/*,video/*"
-            onChange={(e) =>
-              setMediaFiles(Array.from(e.target.files || []))
-            }
+          <Input type="file" multiple accept="image/*,video/*"
+            onChange={(e) => setMediaFiles(Array.from(e.target.files || []))}
           />
 
           <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -254,14 +232,47 @@ export default function EditProduct() {
           </div>
         </div>
 
-        {/* 🆕 BROCHURE */}
+        {/* ✅ YOUTUBE VIDEOS (SAME AS ADD PRODUCT) */}
+        <h3 className="font-semibold mt-8">YouTube Videos</h3>
+
+        {youtubeLinks.map((link, i) => (
+          <div key={i} className="flex gap-2 mt-2">
+            <Input
+              value={link}
+              placeholder="Paste YouTube link"
+              onChange={(e) => {
+                const updated = [...youtubeLinks];
+                updated[i] = e.target.value;
+                setYoutubeLinks(updated);
+              }}
+            />
+            <Button
+              variant="destructive"
+              onClick={() =>
+                setYoutubeLinks(youtubeLinks.filter((_, idx) => idx !== i))
+              }
+            >
+              ✕
+            </Button>
+          </div>
+        ))}
+
+        <Button
+          className="mt-2"
+          variant="outline"
+          onClick={() => setYoutubeLinks([...youtubeLinks, ""])}
+        >
+          + Add YouTube Video
+        </Button>
+
+        {/* BROCHURE */}
         <h3 className="font-semibold mt-8">Brochure (PDF)</h3>
 
         {existingBrochure && (
           <a
             href={existingBrochure}
             target="_blank"
-            className="inline-block mb-3 text-blue-600 underline"
+            className="block mb-2 text-blue-600 underline"
           >
             Download current brochure
           </a>
