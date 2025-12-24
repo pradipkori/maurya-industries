@@ -25,6 +25,16 @@ interface Product {
   features?: string[];
 }
 
+/* ================= SPEC ICON MAP ================= */
+const SPEC_ICONS: Record<string, string> = {
+  power: "⚡",
+  capacity: "📦",
+  rotorSpeed: "🌀",
+  bladeLength: "📏",
+  throatSize: "🔩",
+  weight: "🏋️",
+};
+
 export default function Products() {
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -244,7 +254,7 @@ export default function Products() {
                             key={k}
                             label={k.replace(/([A-Z])/g, " $1")}
                             value={v}
-                            icon="⚙️"
+                            icon={SPEC_ICONS[k] || "⚙️"}
                           />
                         ))}
                     </div>
