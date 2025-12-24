@@ -27,10 +27,8 @@ export default function EditProduct() {
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
   const [deletedMediaIndexes, setDeletedMediaIndexes] = useState<number[]>([]);
 
-  // ✅ YOUTUBE LINKS (RESTORED)
   const [youtubeLinks, setYoutubeLinks] = useState<string[]>([]);
 
-  // 🆕 BROCHURE
   const [brochureFile, setBrochureFile] = useState<File | null>(null);
   const [existingBrochure, setExistingBrochure] = useState<string | null>(null);
 
@@ -58,7 +56,6 @@ export default function EditProduct() {
       .then((res) => res.json())
       .then((data) => {
         if (!data.success) return;
-
         const p = data.product;
 
         setForm({
@@ -77,14 +74,10 @@ export default function EditProduct() {
           features: p.features || [],
         });
 
-        // media
-        if (p.media?.length) {
-          setExistingMedia(p.media);
-        } else if (p.imageUrl) {
+        if (p.media?.length) setExistingMedia(p.media);
+        else if (p.imageUrl)
           setExistingMedia([{ url: p.imageUrl, type: "image" }]);
-        }
 
-        // ✅ LOAD YOUTUBE VIDEOS
         setYoutubeLinks(
           (p.youtubeVideos || []).map(
             (y: YoutubeItem) =>
@@ -92,9 +85,7 @@ export default function EditProduct() {
           )
         );
 
-        if (p.brochureUrl) {
-          setExistingBrochure(p.brochureUrl);
-        }
+        if (p.brochureUrl) setExistingBrochure(p.brochureUrl);
       })
       .finally(() => setLoading(false));
   }, [id]);
@@ -135,7 +126,6 @@ export default function EditProduct() {
     formData.append("specs", JSON.stringify(form.specs));
     formData.append("features", JSON.stringify(form.features));
 
-    // ✅ SAVE YOUTUBE VIDEOS
     formData.append(
       "youtubeVideos",
       JSON.stringify(
@@ -152,10 +142,7 @@ export default function EditProduct() {
     );
 
     mediaFiles.forEach((f) => formData.append("media", f));
-
-    if (brochureFile) {
-      formData.append("brochure", brochureFile);
-    }
+    if (brochureFile) formData.append("brochure", brochureFile);
 
     const res = await fetch(
       `${import.meta.env.VITE_API_URL}/api/products/${id}`,
@@ -200,6 +187,24 @@ export default function EditProduct() {
           onChange={(e) => setForm({ ...form, shortDesc: e.target.value })}
         />
 
+        {/* 🔥 ADDED HERE: TECHNICAL SPECIFICATIONS */}
+        <h3 className="font-semibold mt-8 mb-3">Technical Specifications</h3>
+        <div className="grid md:grid-cols-3 gap-4">
+          {Object.entries(form.specs).map(([key, value]) => (
+            <Input
+              key={key}
+              placeholder={key.replace(/([A-Z])/g, " $1")}
+              value={value}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  specs: { ...form.specs, [key]: e.target.value },
+                })
+              }
+            />
+          ))}
+        </div>
+
         {/* MEDIA */}
         <div className="mt-6">
           <Input type="file" multiple accept="image/*,video/*"
@@ -232,14 +237,12 @@ export default function EditProduct() {
           </div>
         </div>
 
-        {/* ✅ YOUTUBE VIDEOS (SAME AS ADD PRODUCT) */}
+        {/* YOUTUBE */}
         <h3 className="font-semibold mt-8">YouTube Videos</h3>
-
         {youtubeLinks.map((link, i) => (
           <div key={i} className="flex gap-2 mt-2">
             <Input
               value={link}
-              placeholder="Paste YouTube link"
               onChange={(e) => {
                 const updated = [...youtubeLinks];
                 updated[i] = e.target.value;
@@ -267,26 +270,17 @@ export default function EditProduct() {
 
         {/* BROCHURE */}
         <h3 className="font-semibold mt-8">Brochure (PDF)</h3>
-
         {existingBrochure && (
-          <a
-            href={existingBrochure}
-            target="_blank"
-            className="block mb-2 text-blue-600 underline"
-          >
+          <a href={existingBrochure} target="_blank" className="block mb-2 text-blue-600 underline">
             Download current brochure
           </a>
         )}
-
-        <Input
-          type="file"
-          accept="application/pdf"
+        <Input type="file" accept="application/pdf"
           onChange={(e) => setBrochureFile(e.target.files?.[0] || null)}
         />
 
         {/* FEATURES */}
         <h3 className="font-semibold mt-8">Key Features</h3>
-
         {form.features.map((f, i) => (
           <div key={i} className="flex gap-2 mt-2">
             <Input
@@ -314,9 +308,7 @@ export default function EditProduct() {
         <Button
           className="mt-2"
           variant="outline"
-          onClick={() =>
-            setForm({ ...form, features: [...form.features, ""] })
-          }
+          onClick={() => setForm({ ...form, features: [...form.features, ""] })}
         >
           + Add Feature
         </Button>
