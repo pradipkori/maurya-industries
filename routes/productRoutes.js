@@ -78,7 +78,7 @@ router.post("/", upload.array("media", 10), async (req, res) => {
       shortDesc: req.body.shortDesc,
       price: Number(req.body.price) || 0,
 
-      imageUrl: firstImage.url, // backward compatibility
+      imageUrl: firstImage.url,
       media,
 
       youtubeVideos: parseYoutubeVideos(req.body.youtubeVideos),
@@ -94,7 +94,7 @@ router.post("/", upload.array("media", 10), async (req, res) => {
 });
 
 // =========================
-// ✏️ UPDATE PRODUCT (FIXED)
+// ✏️ UPDATE PRODUCT (REORDER FIXED)
 // =========================
 router.put("/:id", upload.array("media", 10), async (req, res) => {
   try {
@@ -118,12 +118,19 @@ router.put("/:id", upload.array("media", 10), async (req, res) => {
     };
 
     // ===============================
-    // START WITH EXISTING MEDIA
+    // 🔥 MEDIA ORDER (FIX)
     // ===============================
-    let media = [...(existingProduct.media || [])];
+    let media = [];
+
+    // ✅ If frontend sends reordered media, TRUST IT
+    if (req.body.mediaOrder) {
+      media = JSON.parse(req.body.mediaOrder);
+    } else {
+      media = [...(existingProduct.media || [])];
+    }
 
     // ===============================
-    // DELETE MEDIA (FIXED)
+    // DELETE MEDIA
     // ===============================
     const deletedIndexes = parseArray(req.body.deletedMediaIndexes);
     if (deletedIndexes.length > 0) {
@@ -142,9 +149,6 @@ router.put("/:id", upload.array("media", 10), async (req, res) => {
       media.push(...newMedia);
     }
 
-    // ===============================
-    // SAVE MEDIA
-    // ===============================
     updateData.media = media;
 
     // ===============================
@@ -175,7 +179,7 @@ router.get("/", async (req, res) => {
   try {
     const products = await Product.find().sort({ createdAt: -1 });
     res.json({ success: true, products });
-  } catch (err) {
+  } catch {
     res.status(500).json({ success: false });
   }
 });
@@ -190,7 +194,7 @@ router.get("/:id", async (req, res) => {
       return res.status(404).json({ success: false, message: "Not found" });
     }
     res.json({ success: true, product });
-  } catch (err) {
+  } catch {
     res.status(500).json({ success: false });
   }
 });
@@ -202,7 +206,7 @@ router.delete("/:id", async (req, res) => {
   try {
     await Product.findByIdAndDelete(req.params.id);
     res.json({ success: true });
-  } catch (err) {
+  } catch {
     res.status(500).json({ success: false });
   }
 });

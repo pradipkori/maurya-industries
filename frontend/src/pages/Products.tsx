@@ -169,12 +169,14 @@ export default function Products() {
                       />
                     )}
                     {activeMedia?.type === "youtube" && (
-                      <iframe
-                        className="w-full h-full"
-                        src={`https://www.youtube.com/embed/${activeMedia.youtubeId}`}
-                        allowFullScreen
-                      />
-                    )}
+  <iframe
+    className="w-full h-full"
+    src={`https://www.youtube.com/embed/${activeMedia.youtubeId}`}
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    allowFullScreen
+  />
+)}
+
                   </div>
 
                   {/* THUMBNAILS */}
@@ -212,11 +214,22 @@ export default function Products() {
                             </div>
                           )}
                           {m.type === "youtube" && (
+                            <div className="relative w-full h-full bg-black rounded overflow-hidden">
+                            {/* YouTube thumbnail */}
                             <img
                               src={`https://img.youtube.com/vi/${m.youtubeId}/hqdefault.jpg`}
-                              className="w-full h-full object-cover rounded"
+                              className="w-full h-full object-cover opacity-80"
                             />
-                          )}
+
+                            {/* Play button overlay */}
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="bg-black/60 rounded-full p-3">
+                                <Play className="w-8 h-8 text-white" />
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
                         </button>
                       ))}
                     </div>
