@@ -20,18 +20,15 @@ export default function EditProduct() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-
   const [toast, setToast] = useState<string | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  // Media
   const [existingMedia, setExistingMedia] = useState<MediaItem[]>([]);
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
+  const [deletedMediaIndexes, setDeletedMediaIndexes] = useState<number[]>([]);
 
-  // YouTube
   const [youtubeLinks, setYoutubeLinks] = useState<string[]>([]);
 
-  // Drag state
   const [dragIndex, setDragIndex] = useState<number | null>(null);
 
   const [form, setForm] = useState({
@@ -50,22 +47,13 @@ export default function EditProduct() {
     features: [] as string[],
   });
 
-  /* ================= HELPERS ================= */
-  const extractYouTubeId = (url: string) => {
-    const match = url.match(
-      /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
-    );
-    return match ? match[1] : null;
-  };
-
-  /* ================= LOAD ================= */
+  /* ================= LOAD PRODUCT ================= */
   useEffect(() => {
-    if (!id) return;
-
     fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`)
       .then((res) => res.json())
       .then((data) => {
         if (!data.success) return;
+
         const p = data.product;
 
         setForm({
@@ -95,16 +83,26 @@ export default function EditProduct() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  /* ================= DRAG & DROP ================= */
+  /* ================= HELPERS ================= */
+  const extractYouTubeId = (url: string) => {
+    const match = url.match(
+      /(?:youtube\.com\/.*v=|youtu\.be\/)([^&?/]+)/
+    );
+    return match ? match[1] : null;
+  };
+
+  const removeMedia = (index: number) => {
+    setDeletedMediaIndexes((prev) => [...prev, index]);
+    setExistingMedia((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const onDragStart = (index: number) => setDragIndex(index);
 
   const onDrop = (index: number) => {
-    if (dragIndex === null || dragIndex === index) return;
-
+    if (dragIndex === null) return;
     const updated = [...existingMedia];
     const [moved] = updated.splice(dragIndex, 1);
     updated.splice(index, 0, moved);
-
     setExistingMedia(updated);
     setDragIndex(null);
   };
@@ -112,7 +110,6 @@ export default function EditProduct() {
   /* ================= SAVE ================= */
   const saveProduct = async () => {
     setSaving(true);
-    setToast(null);
 
     const formData = new FormData();
     formData.append("name", form.name);
@@ -121,72 +118,56 @@ export default function EditProduct() {
     formData.append("shortDesc", form.shortDesc);
     formData.append("specs", JSON.stringify(form.specs));
     formData.append("features", JSON.stringify(form.features));
+    formData.append(
+      "youtubeVideos",
+      JSON.stringify(
+        youtubeLinks
+          .map(extractYouTubeId)
+          .filter(Boolean)
+          .map((id) => ({ youtubeId: id }))
+      )
+    );
+    formData.append(
+      "deletedMediaIndexes",
+      JSON.stringify(deletedMediaIndexes)
+    );
 
-    // IMPORTANT: send existing media (after delete + reorder)
-    formData.append("existingMedia", JSON.stringify(existingMedia));
+    mediaFiles.forEach((f) => formData.append("media", f));
 
-    mediaFiles.forEach((file) => {
-      formData.append("media", file);
-    });
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/products/${id}`,
+      { method: "PUT", body: formData }
+    );
 
-    const youtubeVideos = youtubeLinks
-      .map(extractYouTubeId)
-      .filter(Boolean)
-      .map((id) => ({ youtubeId: id }));
+    const data = await res.json();
+    setSaving(false);
 
-    formData.append("youtubeVideos", JSON.stringify(youtubeVideos));
-
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/products/${id}`,
-        { method: "PUT", body: formData }
-      );
-      const data = await res.json();
-
-      if (data.success) {
-        setShowSuccessModal(true);
-        setTimeout(() => navigate("/admin"), 2500);
-      } else {
-        setToast("❌ Update failed");
-      }
-    } catch {
-      setToast("❌ Server error");
-    } finally {
-      setSaving(false);
+    if (data.success) {
+      setShowSuccessModal(true);
+      setTimeout(() => navigate("/admin"), 2000);
+    } else {
+      setToast("❌ Failed to update product");
     }
   };
 
   if (loading) {
     return (
       <Layout>
-        <div className="p-10 text-center">Loading…</div>
+        <div className="p-10 text-center">Loading product…</div>
       </Layout>
     );
   }
 
+  /* ================= UI ================= */
   return (
     <Layout>
-      {saving && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-xl">Saving…</div>
-        </div>
-      )}
-
-      {showSuccessModal && (
-        <div className="fixed inset-0 z-40 bg-black/50 flex items-center justify-center">
-          <div className="bg-white p-8 rounded-xl text-center">
-            🎉 Product Updated
-          </div>
-        </div>
-      )}
-
       <div className="max-w-5xl mx-auto p-10">
         <h1 className="text-3xl font-bold mb-8">Edit Product</h1>
 
         <div className="grid md:grid-cols-3 gap-6">
-          <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-          <Input value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })} />
-          <Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
+          <Input name="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          <Input name="model" value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })} />
+          <Input name="category" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
         </div>
 
         <Textarea
@@ -197,12 +178,9 @@ export default function EditProduct() {
 
         {/* MEDIA */}
         <div className="mt-6">
-          <Input
-            type="file"
-            multiple
-            accept="image/*,video/*"
+          <Input type="file" multiple accept="image/*,video/*"
             onChange={(e) =>
-              setMediaFiles((prev) => [...prev, ...Array.from(e.target.files || [])])
+              setMediaFiles(Array.from(e.target.files || []))
             }
           />
 
@@ -217,16 +195,13 @@ export default function EditProduct() {
                 className="relative cursor-move"
               >
                 {m.type === "image" ? (
-                  <img src={m.url} className="h-40 w-full object-cover rounded" />
+                  <img src={m.url} className="h-40 w-full object-cover rounded border" />
                 ) : (
-                  <video src={m.url} controls className="h-40 w-full rounded" />
+                  <video src={m.url} controls className="h-40 w-full rounded border" />
                 )}
-
                 <button
-                  onClick={() =>
-                    setExistingMedia(existingMedia.filter((_, idx) => idx !== i))
-                  }
-                  className="absolute top-2 right-2 bg-red-600 text-white px-2 rounded"
+                  onClick={() => removeMedia(i)}
+                  className="absolute top-2 right-2 bg-red-600 text-white rounded-full px-2"
                 >
                   ✕
                 </button>
@@ -234,6 +209,32 @@ export default function EditProduct() {
             ))}
           </div>
         </div>
+
+        {/* FEATURES */}
+        <h3 className="font-semibold mt-8">Key Features</h3>
+        {form.features.map((f, i) => (
+          <div key={i} className="flex gap-2 mt-2">
+            <Input
+              value={f}
+              onChange={(e) => {
+                const updated = [...form.features];
+                updated[i] = e.target.value;
+                setForm({ ...form, features: updated });
+              }}
+            />
+            <Button variant="destructive" onClick={() =>
+              setForm({ ...form, features: form.features.filter((_, idx) => idx !== i) })
+            }>
+              ✕
+            </Button>
+          </div>
+        ))}
+
+        <Button className="mt-2" variant="outline"
+          onClick={() => setForm({ ...form, features: [...form.features, ""] })}
+        >
+          + Add Feature
+        </Button>
 
         <Button className="mt-8" onClick={saveProduct}>
           Save Changes
