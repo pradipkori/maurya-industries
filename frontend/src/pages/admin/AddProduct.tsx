@@ -13,8 +13,6 @@ export default function AddProduct() {
   const [toast, setToast] = useState<string | null>(null);
 
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
-
-  // 🆕 YouTube links
   const [youtubeLinks, setYoutubeLinks] = useState<string[]>([""]);
 
   const [form, setForm] = useState({
@@ -34,20 +32,19 @@ export default function AddProduct() {
     features: [""],
   });
 
-  // ===============================
-  // HELPERS
-  // ===============================
-  // 🆕 Extract YouTube ID safely
-  const extractYouTubeId = (url: string) => {
-    const match = url.match(
-      /(?:youtube\.com\/.*v=|youtu\.be\/)([^&?/]+)/
-    );
+  /* ===============================
+     SAFE YOUTUBE ID EXTRACTOR
+  =============================== */
+  const extractYouTubeId = (url: string): string | null => {
+    const regex =
+      /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+    const match = url.match(regex);
     return match ? match[1] : null;
   };
 
-  // ===============================
-  // HANDLERS
-  // ===============================
+  /* ===============================
+     HANDLERS
+  =============================== */
   const handleChange = (e: any) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -76,9 +73,9 @@ export default function AddProduct() {
     });
   };
 
-  // ===============================
-  // SUBMIT
-  // ===============================
+  /* ===============================
+     SUBMIT
+  =============================== */
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     setLoading(true);
@@ -93,12 +90,10 @@ export default function AddProduct() {
     formData.append("specs", JSON.stringify(form.specs));
     formData.append("features", JSON.stringify(form.features));
 
-    // Cloudinary media
     mediaFiles.forEach((file) => {
       formData.append("media", file);
     });
 
-    // 🆕 YouTube videos
     const youtubeVideos = youtubeLinks
       .map((link) => extractYouTubeId(link))
       .filter(Boolean)
@@ -120,10 +115,7 @@ export default function AddProduct() {
       if (data.success) {
         setToast("✅ Product added successfully");
         setShowSuccessModal(true);
-
-        setTimeout(() => {
-          navigate("/admin");
-        }, 2500);
+        setTimeout(() => navigate("/admin"), 2500);
       } else {
         setToast(data.message || "❌ Failed to add product");
       }
@@ -136,37 +128,32 @@ export default function AddProduct() {
 
   return (
     <Layout>
-      {/* 🔥 FULL PAGE LOADING OVERLAY */}
+      {/* LOADING OVERLAY */}
       {loading && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
-          <div className="bg-white rounded-xl p-6 flex flex-col items-center gap-4 animate-fade-in">
-            <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            <p className="font-medium">Adding product…</p>
+          <div className="bg-white p-6 rounded-xl flex flex-col items-center gap-4">
+            <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+            <p>Adding product…</p>
           </div>
         </div>
       )}
 
-      {/* 🔔 TOAST */}
+      {/* TOAST */}
       {toast && (
-        <div className="fixed top-6 right-6 z-50 bg-black text-white px-4 py-3 rounded shadow-lg animate-fade-in">
+        <div className="fixed top-6 right-6 z-50 bg-black text-white px-4 py-3 rounded">
           {toast}
         </div>
       )}
 
-      {/* 🎉 SUCCESS MODAL */}
+      {/* SUCCESS MODAL */}
       {showSuccessModal && (
         <div className="fixed inset-0 z-40 bg-black/50 flex items-center justify-center">
-          <div className="bg-white rounded-xl p-8 w-full max-w-md text-center animate-fade-in">
-            <div className="text-4xl mb-4">🎉</div>
-            <h2 className="text-xl font-semibold mb-2">
+          <div className="bg-white p-8 rounded-xl text-center">
+            <div className="text-4xl mb-3">🎉</div>
+            <h2 className="text-xl font-semibold">
               Product Added Successfully
             </h2>
-            <p className="text-gray-600 mb-6">
-              Redirecting to dashboard…
-            </p>
-            <Button disabled className="w-full">
-              Please wait
-            </Button>
+            <p className="text-gray-600">Redirecting…</p>
           </div>
         </div>
       )}
@@ -180,7 +167,9 @@ export default function AddProduct() {
         >
           {/* BASIC INFO */}
           <section>
-            <h2 className="text-xl font-semibold mb-4">Basic Information</h2>
+            <h2 className="text-xl font-semibold mb-4">
+              Basic Information
+            </h2>
             <div className="grid md:grid-cols-2 gap-4">
               <Input name="name" placeholder="Product Name" onChange={handleChange} required />
               <Input name="model" placeholder="Model" onChange={handleChange} required />
@@ -197,10 +186,26 @@ export default function AddProduct() {
             />
           </section>
 
+          {/* 🔧 TECHNICAL SPECIFICATIONS (RESTORED) */}
+          <section>
+            <h2 className="text-xl font-semibold mb-4">
+              Technical Specifications
+            </h2>
+            <div className="grid md:grid-cols-3 gap-4">
+              <Input name="bladeLength" placeholder="Blade Length" onChange={handleSpecsChange} />
+              <Input name="power" placeholder="Power" onChange={handleSpecsChange} />
+              <Input name="capacity" placeholder="Capacity" onChange={handleSpecsChange} />
+              <Input name="throatSize" placeholder="Throat Size" onChange={handleSpecsChange} />
+              <Input name="rotorSpeed" placeholder="Rotor Speed (RPM)" onChange={handleSpecsChange} />
+              <Input name="weight" placeholder="Weight" onChange={handleSpecsChange} />
+            </div>
+          </section>
+
           {/* MEDIA */}
           <section>
-            <h2 className="text-xl font-semibold mb-2">Product Media</h2>
-
+            <h2 className="text-xl font-semibold mb-2">
+              Product Media
+            </h2>
             <Input
               type="file"
               multiple
@@ -213,30 +218,9 @@ export default function AddProduct() {
                 ]);
               }}
             />
-
-            {mediaFiles.length > 0 && (
-              <div className="mt-4 space-y-2 text-sm">
-                {mediaFiles.map((file, i) => (
-                  <div key={i} className="flex justify-between border p-2 rounded">
-                    <span>
-                      {file.type.startsWith("image") ? "🖼️" : "🎥"} {file.name}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setMediaFiles(mediaFiles.filter((_, idx) => idx !== i))
-                      }
-                      className="text-red-500"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
           </section>
 
-          {/* 🆕 YOUTUBE VIDEOS */}
+          {/* YOUTUBE */}
           <section>
             <h2 className="text-xl font-semibold mb-2">
               YouTube Videos (Optional)
@@ -245,7 +229,7 @@ export default function AddProduct() {
             {youtubeLinks.map((link, i) => (
               <div key={i} className="flex gap-2 mb-2">
                 <Input
-                  placeholder="YouTube video link"
+                  placeholder="Paste YouTube link"
                   value={link}
                   onChange={(e) => {
                     const updated = [...youtubeLinks];
@@ -278,7 +262,9 @@ export default function AddProduct() {
 
           {/* FEATURES */}
           <section>
-            <h2 className="text-xl font-semibold mb-4">Key Features</h2>
+            <h2 className="text-xl font-semibold mb-4">
+              Key Features
+            </h2>
 
             {form.features.map((f, i) => (
               <div key={i} className="flex gap-2 mb-2">
@@ -304,7 +290,6 @@ export default function AddProduct() {
             </Button>
           </section>
 
-          {/* SUBMIT */}
           <div className="flex justify-end">
             <Button type="submit" variant="industrial">
               Add Product
