@@ -186,7 +186,7 @@ export default function AddProduct() {
             />
           </section>
 
-          {/* 🔧 TECHNICAL SPECIFICATIONS (RESTORED) */}
+          {/* TECHNICAL SPECIFICATIONS */}
           <section>
             <h2 className="text-xl font-semibold mb-4">
               Technical Specifications
@@ -206,6 +206,7 @@ export default function AddProduct() {
             <h2 className="text-xl font-semibold mb-2">
               Product Media
             </h2>
+
             <Input
               type="file"
               multiple
@@ -218,6 +219,44 @@ export default function AddProduct() {
                 ]);
               }}
             />
+
+            {/* ✅ SELECTED MEDIA PREVIEW (FIXED) */}
+            {mediaFiles.length > 0 && (
+              <div className="mt-4 space-y-2 text-sm">
+                <p className="font-medium text-muted-foreground">
+                  Selected files:
+                </p>
+
+                {mediaFiles.map((file, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between border rounded px-3 py-2"
+                  >
+                    <div className="flex items-center gap-2 truncate">
+                      <span className="text-lg">
+                        {file.type.startsWith("image") ? "🖼️" : "🎥"}
+                      </span>
+                      <span className="truncate">{file.name}</span>
+                      <span className="text-xs text-muted-foreground">
+                        ({Math.round(file.size / 1024)} KB)
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="text-red-500 font-bold px-2"
+                      onClick={() =>
+                        setMediaFiles(
+                          mediaFiles.filter((_, i) => i !== index)
+                        )
+                      }
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </section>
 
           {/* YOUTUBE */}
