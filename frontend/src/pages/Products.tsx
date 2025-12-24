@@ -2,12 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import {
-  ChevronRight,
-  Phone,
-  Play,
-  Download,
-} from "lucide-react";
+import { ChevronRight, Phone, Play, Download } from "lucide-react";
 
 /* ================= TYPES ================= */
 interface MediaItem {
@@ -61,13 +56,10 @@ export default function Products() {
     return <div className="p-16 text-center">Loading products…</div>;
   }
 
-  /* ================= MEDIA NORMALIZER ================= */
+  /* ================= MEDIA ================= */
   const getMedia = (product: Product): MediaItem[] => {
     const uploaded =
-      product.media?.map((m) => ({
-        type: m.type,
-        url: m.url,
-      })) || [];
+      product.media?.map((m) => ({ type: m.type, url: m.url })) || [];
 
     const youtube =
       product.youtubeVideos?.map((y) => ({
@@ -85,7 +77,6 @@ export default function Products() {
   const media = selectedProduct ? getMedia(selectedProduct) : [];
   const activeMedia = media[activeIndex];
 
-  /* ================= SCROLL ================= */
   const scrollThumbs = (dir: "left" | "right") => {
     if (!thumbRef.current) return;
     thumbRef.current.scrollBy({
@@ -111,6 +102,22 @@ export default function Products() {
 
       <section className="section-padding">
         <div className="container-industrial">
+          {/* CATEGORY FILTER */}
+          <div className="flex gap-3 flex-wrap mb-8">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`px-4 py-2 rounded-full font-semibold ${
+                  activeCategory === cat
+                    ? "bg-primary text-white"
+                    : "bg-muted"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
 
           {/* GRID */}
           {viewMode === "grid" && (
@@ -131,19 +138,25 @@ export default function Products() {
             </div>
           )}
 
-          {/* ================= DETAILED VIEW ================= */}
+          {/* DETAILED VIEW */}
           {viewMode === "detailed" && selectedProduct && (
             <div className="bg-card rounded-xl shadow-xl p-6 lg:p-8 mt-10">
               <div className="grid lg:grid-cols-2 gap-10">
-
-                {/* ===== GALLERY ===== */}
+                {/* GALLERY */}
                 <div>
                   <div className="aspect-square bg-black rounded-lg overflow-hidden mb-4">
                     {activeMedia?.type === "image" && (
-                      <img src={activeMedia.url} className="w-full h-full object-contain bg-white" />
+                      <img
+                        src={activeMedia.url}
+                        className="w-full h-full object-contain bg-white"
+                      />
                     )}
                     {activeMedia?.type === "video" && (
-                      <video src={activeMedia.url} controls className="w-full h-full" />
+                      <video
+                        src={activeMedia.url}
+                        controls
+                        className="w-full h-full"
+                      />
                     )}
                     {activeMedia?.type === "youtube" && (
                       <iframe
@@ -153,9 +166,61 @@ export default function Products() {
                       />
                     )}
                   </div>
+
+                  {/* THUMBNAILS */}
+                  <div className="relative">
+                    <button
+                      onClick={() => scrollThumbs("left")}
+                      className="absolute -left-3 top-1/2 bg-white rounded-full px-2"
+                    >
+                      ◀
+                    </button>
+
+                    <div
+                      ref={thumbRef}
+                      className="flex gap-3 overflow-x-auto px-6 snap-x"
+                    >
+                      {media.map((m, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setActiveIndex(i)}
+                          className={`w-20 h-20 rounded border snap-center ${
+                            i === activeIndex
+                              ? "ring-2 ring-primary"
+                              : ""
+                          }`}
+                        >
+                          {m.type === "image" && (
+                            <img
+                              src={m.url}
+                              className="w-full h-full object-cover rounded"
+                            />
+                          )}
+                          {m.type === "video" && (
+                            <div className="bg-black h-full flex items-center justify-center">
+                              <Play className="text-white" />
+                            </div>
+                          )}
+                          {m.type === "youtube" && (
+                            <img
+                              src={`https://img.youtube.com/vi/${m.youtubeId}/hqdefault.jpg`}
+                              className="w-full h-full object-cover rounded"
+                            />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+
+                    <button
+                      onClick={() => scrollThumbs("right")}
+                      className="absolute -right-3 top-1/2 bg-white rounded-full px-2"
+                    >
+                      ▶
+                    </button>
+                  </div>
                 </div>
 
-                {/* ===== RIGHT DETAILS (FIXED) ===== */}
+                {/* DETAILS */}
                 <div>
                   <h2 className="text-3xl font-bold mb-2">
                     {selectedProduct.name}
@@ -169,27 +234,19 @@ export default function Products() {
 
                   <p className="mb-6">{selectedProduct.shortDesc}</p>
 
-                  {/* 🔥 HIGHLIGHTED SPECS (OLD STYLE RESTORED) */}
+                  {/* HIGHLIGHTED SPECS */}
                   {selectedProduct.specs && (
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-                      {selectedProduct.specs.power && (
-                        <SpecHighlight label="Power" value={selectedProduct.specs.power} icon="⚡" />
-                      )}
-                      {selectedProduct.specs.capacity && (
-                        <SpecHighlight label="Capacity" value={selectedProduct.specs.capacity} icon="📦" />
-                      )}
-                      {selectedProduct.specs.rotorSpeed && (
-                        <SpecHighlight label="Rotor Speed" value={selectedProduct.specs.rotorSpeed} icon="🌀" />
-                      )}
-                      {selectedProduct.specs.weight && (
-                        <SpecHighlight label="Weight" value={selectedProduct.specs.weight} icon="🏋️" />
-                      )}
-                      {selectedProduct.specs.bladeLength && (
-                        <SpecHighlight label="Blade Length" value={selectedProduct.specs.bladeLength} icon="📏" />
-                      )}
-                      {selectedProduct.specs.throatSize && (
-                        <SpecHighlight label="Throat Size" value={selectedProduct.specs.throatSize} icon="🔩" />
-                      )}
+                      {Object.entries(selectedProduct.specs)
+                        .filter(([, v]) => v)
+                        .map(([k, v]) => (
+                          <SpecHighlight
+                            key={k}
+                            label={k.replace(/([A-Z])/g, " $1")}
+                            value={v}
+                            icon="⚙️"
+                          />
+                        ))}
                     </div>
                   )}
 
@@ -219,7 +276,10 @@ export default function Products() {
                       Download Brochure
                     </Button>
 
-                    <Button variant="ghost" onClick={() => setViewMode("grid")}>
+                    <Button
+                      variant="ghost"
+                      onClick={() => setViewMode("grid")}
+                    >
                       Back
                     </Button>
                   </div>
