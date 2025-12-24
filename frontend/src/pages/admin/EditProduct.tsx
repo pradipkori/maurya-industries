@@ -10,6 +10,10 @@ interface MediaItem {
   type: "image" | "video";
 }
 
+interface YoutubeItem {
+  youtubeId: string;
+}
+
 export default function EditProduct() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -24,8 +28,12 @@ export default function EditProduct() {
   const [existingMedia, setExistingMedia] = useState<MediaItem[]>([]);
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
 
+  // 🆕 YouTube videos
+  const [youtubeLinks, setYoutubeLinks] = useState<string[]>([]);
+
   // Delete confirmation
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
+  const [deleteYoutubeIndex, setDeleteYoutubeIndex] = useState<number | null>(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -42,6 +50,16 @@ export default function EditProduct() {
     },
     features: [] as string[],
   });
+
+  // ===============================
+  // HELPERS
+  // ===============================
+  const extractYouTubeId = (url: string) => {
+    const match = url.match(
+      /(?:youtube\.com\/.*v=|youtu\.be\/)([^&?/]+)/
+    );
+    return match ? match[1] : null;
+  };
 
   // ===============================
   // LOAD PRODUCT
@@ -72,6 +90,14 @@ export default function EditProduct() {
           });
 
           setExistingMedia(p.media || []);
+
+          // 🆕 load youtube videos
+          setYoutubeLinks(
+            (p.youtubeVideos || []).map(
+              (y: YoutubeItem) =>
+                `https://www.youtube.com/watch?v=${y.youtubeId}`
+            )
+          );
         }
       })
       .finally(() => setLoading(false));
@@ -123,10 +149,15 @@ export default function EditProduct() {
     formData.append("specs", JSON.stringify(form.specs));
     formData.append("features", JSON.stringify(form.features));
 
-    // send remaining existing media URLs as JSON
-    formData.append("existingMedia", JSON.stringify(existingMedia));
+    // 🆕 YouTube videos
+    const youtubeVideos = youtubeLinks
+      .map((link) => extractYouTubeId(link))
+      .filter(Boolean)
+      .map((id) => ({ youtubeId: id }));
 
-    // append new files
+    formData.append("youtubeVideos", JSON.stringify(youtubeVideos));
+
+    // new media
     mediaFiles.forEach((file) => {
       formData.append("media", file);
     });
@@ -206,39 +237,6 @@ export default function EditProduct() {
         </div>
       )}
 
-      {/* DELETE CONFIRMATION */}
-      {deleteIndex !== null && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-xl animate-fade-in">
-            <h3 className="text-lg font-semibold mb-3">
-              Delete this media?
-            </h3>
-            <p className="text-sm text-gray-600 mb-4">
-              This action cannot be undone.
-            </p>
-            <div className="flex gap-3 justify-end">
-              <Button
-                variant="outline"
-                onClick={() => setDeleteIndex(null)}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={() => {
-                  setExistingMedia(
-                    existingMedia.filter((_, i) => i !== deleteIndex)
-                  );
-                  setDeleteIndex(null);
-                }}
-              >
-                Delete
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
       <div className="max-w-5xl mx-auto p-10">
         <h1 className="text-3xl font-bold mb-8">Edit Product</h1>
 
@@ -272,7 +270,6 @@ export default function EditProduct() {
             }}
           />
 
-          {/* EXISTING MEDIA */}
           {existingMedia.length > 0 && (
             <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
               {existingMedia.map((m, i) => (
@@ -292,6 +289,41 @@ export default function EditProduct() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* 🆕 YOUTUBE VIDEOS */}
+        <div className="mt-8">
+          <h3 className="font-semibold mb-2">YouTube Videos</h3>
+
+          {youtubeLinks.map((link, i) => (
+            <div key={i} className="flex gap-2 mb-2">
+              <Input
+                value={link}
+                onChange={(e) => {
+                  const updated = [...youtubeLinks];
+                  updated[i] = e.target.value;
+                  setYoutubeLinks(updated);
+                }}
+              />
+              <Button
+                variant="destructive"
+                onClick={() =>
+                  setYoutubeLinks(
+                    youtubeLinks.filter((_, idx) => idx !== i)
+                  )
+                }
+              >
+                ✕
+              </Button>
+            </div>
+          ))}
+
+          <Button
+            variant="outline"
+            onClick={() => setYoutubeLinks([...youtubeLinks, ""])}
+          >
+            + Add YouTube Video
+          </Button>
         </div>
 
         {/* FEATURES */}
@@ -314,11 +346,7 @@ export default function EditProduct() {
           + Add Feature
         </Button>
 
-        <Button
-          className="mt-8"
-          onClick={saveProduct}
-          disabled={saving}
-        >
+        <Button className="mt-8" onClick={saveProduct}>
           Save Changes
         </Button>
       </div>

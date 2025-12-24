@@ -14,6 +14,9 @@ export default function AddProduct() {
 
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
 
+  // 🆕 YouTube links
+  const [youtubeLinks, setYoutubeLinks] = useState<string[]>([""]);
+
   const [form, setForm] = useState({
     name: "",
     model: "",
@@ -30,6 +33,17 @@ export default function AddProduct() {
     },
     features: [""],
   });
+
+  // ===============================
+  // HELPERS
+  // ===============================
+  // 🆕 Extract YouTube ID safely
+  const extractYouTubeId = (url: string) => {
+    const match = url.match(
+      /(?:youtube\.com\/.*v=|youtu\.be\/)([^&?/]+)/
+    );
+    return match ? match[1] : null;
+  };
 
   // ===============================
   // HANDLERS
@@ -79,9 +93,18 @@ export default function AddProduct() {
     formData.append("specs", JSON.stringify(form.specs));
     formData.append("features", JSON.stringify(form.features));
 
+    // Cloudinary media
     mediaFiles.forEach((file) => {
       formData.append("media", file);
     });
+
+    // 🆕 YouTube videos
+    const youtubeVideos = youtubeLinks
+      .map((link) => extractYouTubeId(link))
+      .filter(Boolean)
+      .map((id) => ({ youtubeId: id }));
+
+    formData.append("youtubeVideos", JSON.stringify(youtubeVideos));
 
     try {
       const res = await fetch(
@@ -211,6 +234,46 @@ export default function AddProduct() {
                 ))}
               </div>
             )}
+          </section>
+
+          {/* 🆕 YOUTUBE VIDEOS */}
+          <section>
+            <h2 className="text-xl font-semibold mb-2">
+              YouTube Videos (Optional)
+            </h2>
+
+            {youtubeLinks.map((link, i) => (
+              <div key={i} className="flex gap-2 mb-2">
+                <Input
+                  placeholder="YouTube video link"
+                  value={link}
+                  onChange={(e) => {
+                    const updated = [...youtubeLinks];
+                    updated[i] = e.target.value;
+                    setYoutubeLinks(updated);
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={() =>
+                    setYoutubeLinks(
+                      youtubeLinks.filter((_, idx) => idx !== i)
+                    )
+                  }
+                >
+                  ✕
+                </Button>
+              </div>
+            ))}
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setYoutubeLinks([...youtubeLinks, ""])}
+            >
+              + Add YouTube Video
+            </Button>
           </section>
 
           {/* FEATURES */}

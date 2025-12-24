@@ -35,8 +35,19 @@ const parseArray = (value) => {
   }
 };
 
+// 🆕 Parse YouTube videos safely
+const parseYoutubeVideos = (value) => {
+  try {
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+    return JSON.parse(value);
+  } catch {
+    return [];
+  }
+};
+
 // =========================
-// ➕ ADD PRODUCT (MULTIPLE IMAGES + VIDEOS)
+// ➕ ADD PRODUCT (MULTIPLE IMAGES + VIDEOS + YOUTUBE)
 // =========================
 router.post("/", upload.array("media", 10), async (req, res) => {
   try {
@@ -67,8 +78,13 @@ router.post("/", upload.array("media", 10), async (req, res) => {
       category: req.body.category,
       shortDesc: req.body.shortDesc,
       price: Number(req.body.price) || 0,
-      imageUrl: firstImage.url, // backward compatibility
-      media, // ✅ store all images + videos
+
+      imageUrl: firstImage.url, // 🔴 backward compatibility
+      media, // Cloudinary media
+
+      // 🆕 YouTube videos (optional)
+      youtubeVideos: parseYoutubeVideos(req.body.youtubeVideos),
+
       specs: parseObject(req.body.specs),
       features: parseArray(req.body.features),
     });
@@ -80,7 +96,7 @@ router.post("/", upload.array("media", 10), async (req, res) => {
 });
 
 // =========================
-// ✏️ UPDATE PRODUCT (MERGE MEDIA)
+// ✏️ UPDATE PRODUCT (MERGE MEDIA + UPDATE YOUTUBE)
 // =========================
 router.put("/:id", upload.array("media", 10), async (req, res) => {
   try {
@@ -100,6 +116,9 @@ router.put("/:id", upload.array("media", 10), async (req, res) => {
       price: Number(req.body.price) || existingProduct.price,
       specs: parseObject(req.body.specs),
       features: parseArray(req.body.features),
+
+      // 🆕 Update YouTube videos (replace list)
+      youtubeVideos: parseYoutubeVideos(req.body.youtubeVideos),
     };
 
     let newMedia = [];
@@ -111,7 +130,7 @@ router.put("/:id", upload.array("media", 10), async (req, res) => {
       }));
     }
 
-    // ✅ MERGE old + new media
+    // ✅ Merge old + new media
     updateData.media = [...(existingProduct.media || []), ...newMedia];
 
     // Update main image only if new image uploaded

@@ -13,8 +13,9 @@ import {
 
 /* ================= TYPES ================= */
 interface MediaItem {
-  url: string;
-  type: "image" | "video";
+  type: "image" | "video" | "youtube"; // 🆕 youtube added
+  url?: string;
+  youtubeId?: string;
 }
 
 interface Product {
@@ -24,7 +25,8 @@ interface Product {
   category: string;
   shortDesc?: string;
   imageUrl?: string;
-  media?: MediaItem[];
+  media?: { url: string; type: "image" | "video" }[];
+  youtubeVideos?: { youtubeId: string }[]; // 🆕
   price?: number;
   specs?: Record<string, string>;
   features?: string[];
@@ -62,12 +64,26 @@ export default function Products() {
     return <div className="p-16 text-center">Loading products…</div>;
   }
 
-  /* ================= MEDIA HELPER ================= */
+  /* ================= MEDIA NORMALIZER ================= */
   const getMedia = (product: Product): MediaItem[] => {
-    if (product.media && product.media.length > 0) return product.media;
-    if (product.imageUrl)
-      return [{ url: product.imageUrl, type: "image" }];
-    return [];
+    const uploaded =
+      product.media?.map((m) => ({
+        type: m.type,
+        url: m.url,
+      })) || [];
+
+    const youtube =
+      product.youtubeVideos?.map((y) => ({
+        type: "youtube" as const,
+        youtubeId: y.youtubeId,
+      })) || [];
+
+    // fallback for old products
+    if (uploaded.length === 0 && product.imageUrl) {
+      uploaded.push({ type: "image", url: product.imageUrl });
+    }
+
+    return [...uploaded, ...youtube];
   };
 
   const media =
@@ -148,16 +164,28 @@ export default function Products() {
                 <div>
                   {/* MAIN PREVIEW */}
                   <div className="aspect-square bg-black rounded-lg overflow-hidden mb-4">
-                    {activeMedia?.type === "image" ? (
+                    {activeMedia?.type === "image" && (
                       <img
                         src={activeMedia.url}
                         className="w-full h-full object-contain bg-white"
                       />
-                    ) : (
+                    )}
+
+                    {activeMedia?.type === "video" && (
                       <video
                         src={activeMedia.url}
                         controls
                         className="w-full h-full"
+                      />
+                    )}
+
+                    {/* 🆕 YOUTUBE EMBED */}
+                    {activeMedia?.type === "youtube" && (
+                      <iframe
+                        className="w-full h-full"
+                        src={`https://www.youtube.com/embed/${activeMedia.youtubeId}`}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
                       />
                     )}
                   </div>
@@ -185,14 +213,23 @@ export default function Products() {
                               : ""
                           }`}
                         >
-                          {m.type === "image" ? (
+                          {m.type === "image" && (
                             <img
                               src={m.url}
                               className="w-full h-full object-cover rounded"
                             />
-                          ) : (
+                          )}
+
+                          {m.type === "video" && (
                             <div className="w-full h-full bg-black flex items-center justify-center rounded">
                               <Play className="w-6 h-6 text-white" />
+                            </div>
+                          )}
+
+                          {/* 🆕 YOUTUBE THUMBNAIL */}
+                          {m.type === "youtube" && (
+                            <div className="w-full h-full bg-black flex items-center justify-center rounded">
+                              <Play className="w-6 h-6 text-red-600" />
                             </div>
                           )}
                         </button>
@@ -208,7 +245,7 @@ export default function Products() {
                   </div>
 
                   <p className="text-xs text-muted-foreground mt-2">
-                    Scroll or tap thumbnails to view all images & videos
+                    Scroll or swipe thumbnails to view images & videos
                   </p>
                 </div>
 

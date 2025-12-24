@@ -42,7 +42,7 @@ const productSchema = new mongoose.Schema(
     },
 
     // =========================
-    // MEDIA (Images + Videos)
+    // MEDIA (Images + Videos - Cloudinary)
     // =========================
     media: [
       {
@@ -61,6 +61,21 @@ const productSchema = new mongoose.Schema(
         },
       },
     ],
+
+    // =========================
+    // YOUTUBE VIDEOS (NEW - SAFE ADDITION)
+    // =========================
+    youtubeVideos: {
+      type: [
+        {
+          youtubeId: {
+            type: String,
+            trim: true,
+          },
+        },
+      ],
+      default: [],
+    },
 
     // =========================
     // Technical Specifications
