@@ -112,23 +112,6 @@ export default function Products() {
       <section className="section-padding">
         <div className="container-industrial">
 
-          {/* CATEGORY FILTER */}
-          <div className="flex gap-3 flex-wrap mb-8">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`px-4 py-2 rounded-full font-semibold ${
-                  activeCategory === cat
-                    ? "bg-primary text-white"
-                    : "bg-muted"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-
           {/* GRID */}
           {viewMode === "grid" && (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -159,11 +142,9 @@ export default function Products() {
                     {activeMedia?.type === "image" && (
                       <img src={activeMedia.url} className="w-full h-full object-contain bg-white" />
                     )}
-
                     {activeMedia?.type === "video" && (
                       <video src={activeMedia.url} controls className="w-full h-full" />
                     )}
-
                     {activeMedia?.type === "youtube" && (
                       <iframe
                         className="w-full h-full"
@@ -172,39 +153,13 @@ export default function Products() {
                       />
                     )}
                   </div>
-
-                  {/* THUMBNAILS */}
-                  <div className="relative">
-                    <button onClick={() => scrollThumbs("left")} className="absolute -left-3 top-1/2 bg-white rounded-full px-2">◀</button>
-
-                    <div ref={thumbRef} className="flex gap-3 overflow-x-auto px-6 snap-x">
-                      {media.map((m, i) => (
-                        <button
-                          key={i}
-                          onClick={() => setActiveIndex(i)}
-                          className={`w-20 h-20 rounded border snap-center ${
-                            i === activeIndex ? "ring-2 ring-primary" : ""
-                          }`}
-                        >
-                          {m.type === "image" && <img src={m.url} className="w-full h-full object-cover rounded" />}
-                          {m.type === "video" && <div className="bg-black h-full flex items-center justify-center"><Play className="text-white" /></div>}
-                          {m.type === "youtube" && (
-                            <img
-                              src={`https://img.youtube.com/vi/${m.youtubeId}/hqdefault.jpg`}
-                              className="w-full h-full object-cover rounded"
-                            />
-                          )}
-                        </button>
-                      ))}
-                    </div>
-
-                    <button onClick={() => scrollThumbs("right")} className="absolute -right-3 top-1/2 bg-white rounded-full px-2">▶</button>
-                  </div>
                 </div>
 
-                {/* ===== DETAILS ===== */}
+                {/* ===== RIGHT DETAILS (FIXED) ===== */}
                 <div>
-                  <h2 className="text-3xl font-bold mb-2">{selectedProduct.name}</h2>
+                  <h2 className="text-3xl font-bold mb-2">
+                    {selectedProduct.name}
+                  </h2>
 
                   {selectedProduct.price && (
                     <div className="text-primary text-2xl font-bold mb-4">
@@ -214,27 +169,29 @@ export default function Products() {
 
                   <p className="mb-6">{selectedProduct.shortDesc}</p>
 
-                  {/* ✅ RESTORED SPECS */}
-                  {selectedProduct.specs &&
-                    Object.values(selectedProduct.specs).some(Boolean) && (
-                      <div className="mb-6">
-                        <h3 className="text-lg font-semibold mb-3">
-                          Technical Specifications
-                        </h3>
-                        <div className="grid grid-cols-2 gap-3 text-sm">
-                          {Object.entries(selectedProduct.specs)
-                            .filter(([, v]) => v)
-                            .map(([k, v]) => (
-                              <div key={k} className="flex justify-between border-b pb-1">
-                                <span className="capitalize text-muted-foreground">
-                                  {k.replace(/([A-Z])/g, " $1")}
-                                </span>
-                                <span className="font-medium">{v}</span>
-                              </div>
-                            ))}
-                        </div>
-                      </div>
-                    )}
+                  {/* 🔥 HIGHLIGHTED SPECS (OLD STYLE RESTORED) */}
+                  {selectedProduct.specs && (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+                      {selectedProduct.specs.power && (
+                        <SpecHighlight label="Power" value={selectedProduct.specs.power} icon="⚡" />
+                      )}
+                      {selectedProduct.specs.capacity && (
+                        <SpecHighlight label="Capacity" value={selectedProduct.specs.capacity} icon="📦" />
+                      )}
+                      {selectedProduct.specs.rotorSpeed && (
+                        <SpecHighlight label="Rotor Speed" value={selectedProduct.specs.rotorSpeed} icon="🌀" />
+                      )}
+                      {selectedProduct.specs.weight && (
+                        <SpecHighlight label="Weight" value={selectedProduct.specs.weight} icon="🏋️" />
+                      )}
+                      {selectedProduct.specs.bladeLength && (
+                        <SpecHighlight label="Blade Length" value={selectedProduct.specs.bladeLength} icon="📏" />
+                      )}
+                      {selectedProduct.specs.throatSize && (
+                        <SpecHighlight label="Throat Size" value={selectedProduct.specs.throatSize} icon="🔩" />
+                      )}
+                    </div>
+                  )}
 
                   {/* FEATURES */}
                   {selectedProduct.features && (
@@ -293,6 +250,27 @@ function ProductCard({ product }: { product: Product }) {
         <p className="text-sm text-muted-foreground line-clamp-2">
           {product.shortDesc}
         </p>
+      </div>
+    </div>
+  );
+}
+
+/* ================= SPEC CARD ================= */
+function SpecHighlight({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value: string;
+  icon: string;
+}) {
+  return (
+    <div className="bg-muted p-4 rounded-xl text-center border hover:border-primary transition">
+      <div className="text-xl mb-1">{icon}</div>
+      <div className="text-lg font-bold">{value}</div>
+      <div className="text-xs uppercase tracking-wide text-muted-foreground">
+        {label}
       </div>
     </div>
   );
