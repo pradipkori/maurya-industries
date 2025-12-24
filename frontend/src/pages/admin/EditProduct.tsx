@@ -33,6 +33,7 @@ export default function EditProduct() {
   const [existingBrochure, setExistingBrochure] = useState<string | null>(null);
 
   const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [deletingIndex, setDeletingIndex] = useState<number | null>(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -99,8 +100,12 @@ export default function EditProduct() {
   };
 
   const removeMedia = (index: number) => {
-    setDeletedMediaIndexes((prev) => [...prev, index]);
-    setExistingMedia((prev) => prev.filter((_, i) => i !== index));
+    setDeletingIndex(index);
+    setTimeout(() => {
+      setDeletedMediaIndexes((prev) => [...prev, index]);
+      setExistingMedia((prev) => prev.filter((_, i) => i !== index));
+      setDeletingIndex(null);
+    }, 300);
   };
 
   const onDragStart = (index: number) => setDragIndex(index);
@@ -117,6 +122,7 @@ export default function EditProduct() {
   /* ================= SAVE ================= */
   const saveProduct = async () => {
     setSaving(true);
+    setToast(null);
 
     const formData = new FormData();
     formData.append("name", form.name);
@@ -141,22 +147,33 @@ export default function EditProduct() {
       JSON.stringify(deletedMediaIndexes)
     );
 
+    // ✅ NEW: SAVE MEDIA ORDER
+    formData.append(
+      "mediaOrder",
+      JSON.stringify(existingMedia.map((_, i) => i))
+    );
+
     mediaFiles.forEach((f) => formData.append("media", f));
     if (brochureFile) formData.append("brochure", brochureFile);
 
-    const res = await fetch(
-      `${import.meta.env.VITE_API_URL}/api/products/${id}`,
-      { method: "PUT", body: formData }
-    );
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/products/${id}`,
+        { method: "PUT", body: formData }
+      );
 
-    const data = await res.json();
-    setSaving(false);
+      const data = await res.json();
 
-    if (data.success) {
-      setShowSuccessModal(true);
-      setTimeout(() => navigate("/admin"), 2000);
-    } else {
-      setToast("❌ Failed to update product");
+      if (data.success) {
+        setShowSuccessModal(true);
+        setTimeout(() => navigate("/admin"), 2000);
+      } else {
+        setToast("❌ Failed to update product");
+      }
+    } catch {
+      setToast("❌ Server error");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -171,6 +188,36 @@ export default function EditProduct() {
   /* ================= UI ================= */
   return (
     <Layout>
+      {/* 🔄 SAVING OVERLAY */}
+      {saving && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-xl flex flex-col items-center gap-4">
+            <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+            <p>Saving changes…</p>
+          </div>
+        </div>
+      )}
+
+      {/* ✅ SUCCESS MODAL */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-40 bg-black/50 flex items-center justify-center">
+          <div className="bg-white p-8 rounded-xl text-center">
+            <div className="text-4xl mb-2">✅</div>
+            <h2 className="text-xl font-semibold">
+              Product Updated Successfully
+            </h2>
+            <p className="text-gray-600">Redirecting…</p>
+          </div>
+        </div>
+      )}
+
+      {/* 🔔 TOAST */}
+      {toast && (
+        <div className="fixed top-6 right-6 z-50 bg-black text-white px-4 py-3 rounded">
+          {toast}
+        </div>
+      )}
+
       <div className="max-w-5xl mx-auto p-10">
         <h1 className="text-3xl font-bold mb-8">Edit Product</h1>
 
@@ -187,7 +234,7 @@ export default function EditProduct() {
           onChange={(e) => setForm({ ...form, shortDesc: e.target.value })}
         />
 
-        {/* 🔥 ADDED HERE: TECHNICAL SPECIFICATIONS */}
+        {/* TECH SPECS */}
         <h3 className="font-semibold mt-8 mb-3">Technical Specifications</h3>
         <div className="grid md:grid-cols-3 gap-4">
           {Object.entries(form.specs).map(([key, value]) => (
@@ -211,6 +258,10 @@ export default function EditProduct() {
             onChange={(e) => setMediaFiles(Array.from(e.target.files || []))}
           />
 
+          <p className="text-sm text-muted-foreground mt-2">
+            Drag images/videos to change display order
+          </p>
+
           <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
             {existingMedia.map((m, i) => (
               <div
@@ -219,7 +270,9 @@ export default function EditProduct() {
                 onDragStart={() => onDragStart(i)}
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={() => onDrop(i)}
-                className="relative cursor-move"
+                className={`relative cursor-move transition-all duration-300 ${
+                  deletingIndex === i ? "scale-95 opacity-0" : ""
+                }`}
               >
                 {m.type === "image" ? (
                   <img src={m.url} className="h-40 w-full object-cover rounded border" />
