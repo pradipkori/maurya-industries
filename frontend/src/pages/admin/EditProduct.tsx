@@ -24,16 +24,15 @@ export default function EditProduct() {
   const [toast, setToast] = useState<string | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  // Existing + new media
+  // Media
   const [existingMedia, setExistingMedia] = useState<MediaItem[]>([]);
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
 
-  // 🆕 YouTube videos
+  // YouTube
   const [youtubeLinks, setYoutubeLinks] = useState<string[]>([]);
 
-  // Delete confirmation
-  const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
-  const [deleteYoutubeIndex, setDeleteYoutubeIndex] = useState<number | null>(null);
+  // Drag state
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -51,92 +50,66 @@ export default function EditProduct() {
     features: [] as string[],
   });
 
-  // ===============================
-  // HELPERS
-  // ===============================
+  /* ================= HELPERS ================= */
   const extractYouTubeId = (url: string) => {
     const match = url.match(
-      /(?:youtube\.com\/.*v=|youtu\.be\/)([^&?/]+)/
+      /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
     );
     return match ? match[1] : null;
   };
 
-  // ===============================
-  // LOAD PRODUCT
-  // ===============================
+  /* ================= LOAD ================= */
   useEffect(() => {
     if (!id) return;
 
     fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) {
-          const p = data.product;
+        if (!data.success) return;
+        const p = data.product;
 
-          setForm({
-            name: p.name || "",
-            model: p.model || "",
-            category: p.category || "",
-            shortDesc: p.shortDesc || "",
-            specs: {
-              bladeLength: p.specs?.bladeLength || "",
-              power: p.specs?.power || "",
-              capacity: p.specs?.capacity || "",
-              throatSize: p.specs?.throatSize || "",
-              rotorSpeed: p.specs?.rotorSpeed || "",
-              weight: p.specs?.weight || "",
-            },
-            features: p.features || [],
-          });
+        setForm({
+          name: p.name || "",
+          model: p.model || "",
+          category: p.category || "",
+          shortDesc: p.shortDesc || "",
+          specs: {
+            bladeLength: p.specs?.bladeLength || "",
+            power: p.specs?.power || "",
+            capacity: p.specs?.capacity || "",
+            throatSize: p.specs?.throatSize || "",
+            rotorSpeed: p.specs?.rotorSpeed || "",
+            weight: p.specs?.weight || "",
+          },
+          features: p.features || [],
+        });
 
-          setExistingMedia(p.media || []);
-
-          // 🆕 load youtube videos
-          setYoutubeLinks(
-            (p.youtubeVideos || []).map(
-              (y: YoutubeItem) =>
-                `https://www.youtube.com/watch?v=${y.youtubeId}`
-            )
-          );
-        }
+        setExistingMedia(p.media || []);
+        setYoutubeLinks(
+          (p.youtubeVideos || []).map(
+            (y: YoutubeItem) =>
+              `https://www.youtube.com/watch?v=${y.youtubeId}`
+          )
+        );
       })
       .finally(() => setLoading(false));
   }, [id]);
 
-  // ===============================
-  // HANDLERS
-  // ===============================
-  const handleChange = (e: any) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  /* ================= DRAG & DROP ================= */
+  const onDragStart = (index: number) => setDragIndex(index);
+
+  const onDrop = (index: number) => {
+    if (dragIndex === null || dragIndex === index) return;
+
+    const updated = [...existingMedia];
+    const [moved] = updated.splice(dragIndex, 1);
+    updated.splice(index, 0, moved);
+
+    setExistingMedia(updated);
+    setDragIndex(null);
   };
 
-  const handleSpecsChange = (e: any) => {
-    setForm({
-      ...form,
-      specs: { ...form.specs, [e.target.name]: e.target.value },
-    });
-  };
-
-  const handleFeatureChange = (i: number, value: string) => {
-    const updated = [...form.features];
-    updated[i] = value;
-    setForm({ ...form, features: updated });
-  };
-
-  const addFeature = () => {
-    setForm({ ...form, features: [...form.features, ""] });
-  };
-
-  const removeFeature = (i: number) => {
-    setForm({
-      ...form,
-      features: form.features.filter((_, idx) => idx !== i),
-    });
-  };
-
-  // ===============================
-  // SAVE PRODUCT
-  // ===============================
+  /* ================= SAVE ================= */
   const saveProduct = async () => {
     setSaving(true);
     setToast(null);
@@ -149,36 +122,32 @@ export default function EditProduct() {
     formData.append("specs", JSON.stringify(form.specs));
     formData.append("features", JSON.stringify(form.features));
 
-    // 🆕 YouTube videos
+    // IMPORTANT: send existing media (after delete + reorder)
+    formData.append("existingMedia", JSON.stringify(existingMedia));
+
+    mediaFiles.forEach((file) => {
+      formData.append("media", file);
+    });
+
     const youtubeVideos = youtubeLinks
-      .map((link) => extractYouTubeId(link))
+      .map(extractYouTubeId)
       .filter(Boolean)
       .map((id) => ({ youtubeId: id }));
 
     formData.append("youtubeVideos", JSON.stringify(youtubeVideos));
 
-    // new media
-    mediaFiles.forEach((file) => {
-      formData.append("media", file);
-    });
-
     try {
       const res = await fetch(
         `${import.meta.env.VITE_API_URL}/api/products/${id}`,
-        {
-          method: "PUT",
-          body: formData,
-        }
+        { method: "PUT", body: formData }
       );
-
       const data = await res.json();
 
       if (data.success) {
-        setToast("✅ Product updated successfully");
         setShowSuccessModal(true);
         setTimeout(() => navigate("/admin"), 2500);
       } else {
-        setToast("❌ Failed to update product");
+        setToast("❌ Update failed");
       }
     } catch {
       setToast("❌ Server error");
@@ -187,52 +156,26 @@ export default function EditProduct() {
     }
   };
 
-  // ===============================
-  // LOADING
-  // ===============================
   if (loading) {
     return (
       <Layout>
-        <div className="p-10 text-center animate-pulse">
-          Loading product…
-        </div>
+        <div className="p-10 text-center">Loading…</div>
       </Layout>
     );
   }
 
-  // ===============================
-  // UI
-  // ===============================
   return (
     <Layout>
-      {/* FULL PAGE LOADING */}
       {saving && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-xl flex flex-col items-center gap-4 animate-fade-in">
-            <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            <p>Saving changes…</p>
-          </div>
+          <div className="bg-white p-6 rounded-xl">Saving…</div>
         </div>
       )}
 
-      {/* TOAST */}
-      {toast && (
-        <div className="fixed top-6 right-6 z-50 bg-black text-white px-4 py-3 rounded animate-fade-in">
-          {toast}
-        </div>
-      )}
-
-      {/* SUCCESS MODAL */}
       {showSuccessModal && (
         <div className="fixed inset-0 z-40 bg-black/50 flex items-center justify-center">
-          <div className="bg-white p-8 rounded-xl text-center animate-fade-in">
-            <div className="text-4xl mb-4">🎉</div>
-            <h2 className="text-xl font-semibold mb-2">
-              Product Updated
-            </h2>
-            <p className="text-gray-600">
-              Redirecting to dashboard…
-            </p>
+          <div className="bg-white p-8 rounded-xl text-center">
+            🎉 Product Updated
           </div>
         </div>
       )}
@@ -240,19 +183,16 @@ export default function EditProduct() {
       <div className="max-w-5xl mx-auto p-10">
         <h1 className="text-3xl font-bold mb-8">Edit Product</h1>
 
-        {/* BASIC */}
         <div className="grid md:grid-cols-3 gap-6">
-          <Input name="name" value={form.name} onChange={handleChange} />
-          <Input name="model" value={form.model} onChange={handleChange} />
-          <Input name="category" value={form.category} onChange={handleChange} />
+          <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          <Input value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })} />
+          <Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
         </div>
 
         <Textarea
           className="mt-4"
           value={form.shortDesc}
-          onChange={(e) =>
-            setForm({ ...form, shortDesc: e.target.value })
-          }
+          onChange={(e) => setForm({ ...form, shortDesc: e.target.value })}
         />
 
         {/* MEDIA */}
@@ -261,90 +201,39 @@ export default function EditProduct() {
             type="file"
             multiple
             accept="image/*,video/*"
-            onChange={(e) => {
-              if (!e.target.files) return;
-              setMediaFiles((prev) => [
-                ...prev,
-                ...Array.from(e.target.files),
-              ]);
-            }}
+            onChange={(e) =>
+              setMediaFiles((prev) => [...prev, ...Array.from(e.target.files || [])])
+            }
           />
 
-          {existingMedia.length > 0 && (
-            <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
-              {existingMedia.map((m, i) => (
-                <div key={i} className="relative">
-                  {m.type === "image" ? (
-                    <img src={m.url} className="h-40 w-full object-cover rounded border" />
-                  ) : (
-                    <video src={m.url} controls className="h-40 w-full rounded border" />
-                  )}
-                  <button
-                    onClick={() => setDeleteIndex(i)}
-                    className="absolute top-2 right-2 bg-red-600 text-white rounded-full px-2"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* 🆕 YOUTUBE VIDEOS */}
-        <div className="mt-8">
-          <h3 className="font-semibold mb-2">YouTube Videos</h3>
-
-          {youtubeLinks.map((link, i) => (
-            <div key={i} className="flex gap-2 mb-2">
-              <Input
-                value={link}
-                onChange={(e) => {
-                  const updated = [...youtubeLinks];
-                  updated[i] = e.target.value;
-                  setYoutubeLinks(updated);
-                }}
-              />
-              <Button
-                variant="destructive"
-                onClick={() =>
-                  setYoutubeLinks(
-                    youtubeLinks.filter((_, idx) => idx !== i)
-                  )
-                }
+          <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
+            {existingMedia.map((m, i) => (
+              <div
+                key={i}
+                draggable
+                onDragStart={() => onDragStart(i)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => onDrop(i)}
+                className="relative cursor-move"
               >
-                ✕
-              </Button>
-            </div>
-          ))}
+                {m.type === "image" ? (
+                  <img src={m.url} className="h-40 w-full object-cover rounded" />
+                ) : (
+                  <video src={m.url} controls className="h-40 w-full rounded" />
+                )}
 
-          <Button
-            variant="outline"
-            onClick={() => setYoutubeLinks([...youtubeLinks, ""])}
-          >
-            + Add YouTube Video
-          </Button>
-        </div>
-
-        {/* FEATURES */}
-        <h3 className="font-semibold mt-8">Features</h3>
-        {form.features.map((f, i) => (
-          <div key={i} className="flex gap-2 mt-2">
-            <Input
-              value={f}
-              onChange={(e) =>
-                handleFeatureChange(i, e.target.value)
-              }
-            />
-            <Button variant="destructive" onClick={() => removeFeature(i)}>
-              ✕
-            </Button>
+                <button
+                  onClick={() =>
+                    setExistingMedia(existingMedia.filter((_, idx) => idx !== i))
+                  }
+                  className="absolute top-2 right-2 bg-red-600 text-white px-2 rounded"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
           </div>
-        ))}
-
-        <Button className="mt-2" variant="outline" onClick={addFeature}>
-          + Add Feature
-        </Button>
+        </div>
 
         <Button className="mt-8" onClick={saveProduct}>
           Save Changes
