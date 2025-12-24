@@ -35,7 +35,6 @@ const parseArray = (value) => {
   }
 };
 
-// 🆕 Parse YouTube videos safely
 const parseYoutubeVideos = (value) => {
   try {
     if (!value) return [];
@@ -47,7 +46,7 @@ const parseYoutubeVideos = (value) => {
 };
 
 // =========================
-// ➕ ADD PRODUCT (UNCHANGED)
+// ➕ ADD PRODUCT
 // =========================
 router.post("/", upload.array("media", 10), async (req, res) => {
   try {
@@ -78,8 +77,10 @@ router.post("/", upload.array("media", 10), async (req, res) => {
       category: req.body.category,
       shortDesc: req.body.shortDesc,
       price: Number(req.body.price) || 0,
-      imageUrl: firstImage.url,
+
+      imageUrl: firstImage.url, // backward compatibility
       media,
+
       youtubeVideos: parseYoutubeVideos(req.body.youtubeVideos),
       specs: parseObject(req.body.specs),
       features: parseArray(req.body.features),
@@ -87,12 +88,13 @@ router.post("/", upload.array("media", 10), async (req, res) => {
 
     res.status(201).json({ success: true, product });
   } catch (err) {
+    console.error("ADD PRODUCT ERROR:", err);
     res.status(500).json({ success: false, message: err.message });
   }
 });
 
 // =========================
-// ✏️ UPDATE PRODUCT (🔥 FIXED)
+// ✏️ UPDATE PRODUCT (FIXED)
 // =========================
 router.put("/:id", upload.array("media", 10), async (req, res) => {
   try {
@@ -115,32 +117,40 @@ router.put("/:id", upload.array("media", 10), async (req, res) => {
       youtubeVideos: parseYoutubeVideos(req.body.youtubeVideos),
     };
 
-    // ✅ 1. Media order from frontend
-    let mediaOrder = parseArray(req.body.mediaOrder);
+    // ===============================
+    // START WITH EXISTING MEDIA
+    // ===============================
+    let media = [...(existingProduct.media || [])];
 
-    // ✅ 2. Remove deleted media (already filtered on frontend, but safe)
+    // ===============================
+    // DELETE MEDIA (FIXED)
+    // ===============================
     const deletedIndexes = parseArray(req.body.deletedMediaIndexes);
     if (deletedIndexes.length > 0) {
-      mediaOrder = mediaOrder.filter(
-        (_, index) => !deletedIndexes.includes(index)
-      );
+      media = media.filter((_, index) => !deletedIndexes.includes(index));
     }
 
-    // ✅ 3. New uploads
-    let newMedia = [];
+    // ===============================
+    // ADD NEW UPLOADS
+    // ===============================
     if (req.files && req.files.length > 0) {
-      newMedia = req.files.map((file) => ({
+      const newMedia = req.files.map((file) => ({
         url: file.path,
         public_id: file.filename,
         type: file.mimetype.startsWith("video") ? "video" : "image",
       }));
+      media.push(...newMedia);
     }
 
-    // ✅ 4. FINAL media list (ORDER PRESERVED)
-    updateData.media = [...mediaOrder, ...newMedia];
+    // ===============================
+    // SAVE MEDIA
+    // ===============================
+    updateData.media = media;
 
-    // ✅ 5. Update main image from first image
-    const firstImage = updateData.media.find((m) => m.type === "image");
+    // ===============================
+    // UPDATE MAIN IMAGE
+    // ===============================
+    const firstImage = media.find((m) => m.type === "image");
     if (firstImage) {
       updateData.imageUrl = firstImage.url;
     }
@@ -153,6 +163,7 @@ router.put("/:id", upload.array("media", 10), async (req, res) => {
 
     res.json({ success: true, product: updatedProduct });
   } catch (err) {
+    console.error("UPDATE PRODUCT ERROR:", err);
     res.status(500).json({ success: false, message: err.message });
   }
 });
@@ -164,7 +175,7 @@ router.get("/", async (req, res) => {
   try {
     const products = await Product.find().sort({ createdAt: -1 });
     res.json({ success: true, products });
-  } catch {
+  } catch (err) {
     res.status(500).json({ success: false });
   }
 });
@@ -179,7 +190,7 @@ router.get("/:id", async (req, res) => {
       return res.status(404).json({ success: false, message: "Not found" });
     }
     res.json({ success: true, product });
-  } catch {
+  } catch (err) {
     res.status(500).json({ success: false });
   }
 });
@@ -191,7 +202,7 @@ router.delete("/:id", async (req, res) => {
   try {
     await Product.findByIdAndDelete(req.params.id);
     res.json({ success: true });
-  } catch {
+  } catch (err) {
     res.status(500).json({ success: false });
   }
 });
