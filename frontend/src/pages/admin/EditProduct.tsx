@@ -29,6 +29,10 @@ export default function EditProduct() {
 
   const [youtubeLinks, setYoutubeLinks] = useState<string[]>([]);
 
+  // 🆕 BROCHURE
+  const [brochureFile, setBrochureFile] = useState<File | null>(null);
+  const [existingBrochure, setExistingBrochure] = useState<string | null>(null);
+
   const [dragIndex, setDragIndex] = useState<number | null>(null);
 
   const [form, setForm] = useState({
@@ -72,13 +76,24 @@ export default function EditProduct() {
           features: p.features || [],
         });
 
-        setExistingMedia(p.media || []);
+        // ✅ MEDIA (new + legacy)
+        if (p.media && p.media.length > 0) {
+          setExistingMedia(p.media);
+        } else if (p.imageUrl) {
+          setExistingMedia([{ url: p.imageUrl, type: "image" }]);
+        }
+
         setYoutubeLinks(
           (p.youtubeVideos || []).map(
             (y: YoutubeItem) =>
               `https://www.youtube.com/watch?v=${y.youtubeId}`
           )
         );
+
+        // 🆕 BROCHURE
+        if (p.brochureUrl) {
+          setExistingBrochure(p.brochureUrl);
+        }
       })
       .finally(() => setLoading(false));
   }, [id]);
@@ -118,6 +133,7 @@ export default function EditProduct() {
     formData.append("shortDesc", form.shortDesc);
     formData.append("specs", JSON.stringify(form.specs));
     formData.append("features", JSON.stringify(form.features));
+
     formData.append(
       "youtubeVideos",
       JSON.stringify(
@@ -127,12 +143,18 @@ export default function EditProduct() {
           .map((id) => ({ youtubeId: id }))
       )
     );
+
     formData.append(
       "deletedMediaIndexes",
       JSON.stringify(deletedMediaIndexes)
     );
 
     mediaFiles.forEach((f) => formData.append("media", f));
+
+    // 🆕 BROCHURE
+    if (brochureFile) {
+      formData.append("brochure", brochureFile);
+    }
 
     const res = await fetch(
       `${import.meta.env.VITE_API_URL}/api/products/${id}`,
@@ -164,10 +186,11 @@ export default function EditProduct() {
       <div className="max-w-5xl mx-auto p-10">
         <h1 className="text-3xl font-bold mb-8">Edit Product</h1>
 
+        {/* BASIC */}
         <div className="grid md:grid-cols-3 gap-6">
-          <Input name="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-          <Input name="model" value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })} />
-          <Input name="category" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
+          <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          <Input value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })} />
+          <Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
         </div>
 
         <Textarea
@@ -176,9 +199,30 @@ export default function EditProduct() {
           onChange={(e) => setForm({ ...form, shortDesc: e.target.value })}
         />
 
+        {/* TECHNICAL SPECS */}
+        <h3 className="font-semibold mt-8">Technical Specifications</h3>
+        <div className="grid md:grid-cols-3 gap-4 mt-3">
+          {Object.entries(form.specs).map(([k, v]) => (
+            <Input
+              key={k}
+              placeholder={k.replace(/([A-Z])/g, " $1")}
+              value={v}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  specs: { ...form.specs, [k]: e.target.value },
+                })
+              }
+            />
+          ))}
+        </div>
+
         {/* MEDIA */}
         <div className="mt-6">
-          <Input type="file" multiple accept="image/*,video/*"
+          <Input
+            type="file"
+            multiple
+            accept="image/*,video/*"
             onChange={(e) =>
               setMediaFiles(Array.from(e.target.files || []))
             }
@@ -210,8 +254,28 @@ export default function EditProduct() {
           </div>
         </div>
 
+        {/* 🆕 BROCHURE */}
+        <h3 className="font-semibold mt-8">Brochure (PDF)</h3>
+
+        {existingBrochure && (
+          <a
+            href={existingBrochure}
+            target="_blank"
+            className="inline-block mb-3 text-blue-600 underline"
+          >
+            Download current brochure
+          </a>
+        )}
+
+        <Input
+          type="file"
+          accept="application/pdf"
+          onChange={(e) => setBrochureFile(e.target.files?.[0] || null)}
+        />
+
         {/* FEATURES */}
         <h3 className="font-semibold mt-8">Key Features</h3>
+
         {form.features.map((f, i) => (
           <div key={i} className="flex gap-2 mt-2">
             <Input
@@ -222,16 +286,26 @@ export default function EditProduct() {
                 setForm({ ...form, features: updated });
               }}
             />
-            <Button variant="destructive" onClick={() =>
-              setForm({ ...form, features: form.features.filter((_, idx) => idx !== i) })
-            }>
+            <Button
+              variant="destructive"
+              onClick={() =>
+                setForm({
+                  ...form,
+                  features: form.features.filter((_, idx) => idx !== i),
+                })
+              }
+            >
               ✕
             </Button>
           </div>
         ))}
 
-        <Button className="mt-2" variant="outline"
-          onClick={() => setForm({ ...form, features: [...form.features, ""] })}
+        <Button
+          className="mt-2"
+          variant="outline"
+          onClick={() =>
+            setForm({ ...form, features: [...form.features, ""] })
+          }
         >
           + Add Feature
         </Button>
