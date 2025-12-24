@@ -47,7 +47,7 @@ const parseYoutubeVideos = (value) => {
 };
 
 // =========================
-// ➕ ADD PRODUCT (MULTIPLE IMAGES + VIDEOS + YOUTUBE)
+// ➕ ADD PRODUCT (UNCHANGED)
 // =========================
 router.post("/", upload.array("media", 10), async (req, res) => {
   try {
@@ -78,13 +78,9 @@ router.post("/", upload.array("media", 10), async (req, res) => {
       category: req.body.category,
       shortDesc: req.body.shortDesc,
       price: Number(req.body.price) || 0,
-
-      imageUrl: firstImage.url, // 🔴 backward compatibility
-      media, // Cloudinary media
-
-      // 🆕 YouTube videos (optional)
+      imageUrl: firstImage.url,
+      media,
       youtubeVideos: parseYoutubeVideos(req.body.youtubeVideos),
-
       specs: parseObject(req.body.specs),
       features: parseArray(req.body.features),
     });
@@ -96,7 +92,7 @@ router.post("/", upload.array("media", 10), async (req, res) => {
 });
 
 // =========================
-// ✏️ UPDATE PRODUCT (MERGE MEDIA + UPDATE YOUTUBE)
+// ✏️ UPDATE PRODUCT (🔥 FIXED)
 // =========================
 router.put("/:id", upload.array("media", 10), async (req, res) => {
   try {
@@ -116,11 +112,21 @@ router.put("/:id", upload.array("media", 10), async (req, res) => {
       price: Number(req.body.price) || existingProduct.price,
       specs: parseObject(req.body.specs),
       features: parseArray(req.body.features),
-
-      // 🆕 Update YouTube videos (replace list)
       youtubeVideos: parseYoutubeVideos(req.body.youtubeVideos),
     };
 
+    // ✅ 1. Media order from frontend
+    let mediaOrder = parseArray(req.body.mediaOrder);
+
+    // ✅ 2. Remove deleted media (already filtered on frontend, but safe)
+    const deletedIndexes = parseArray(req.body.deletedMediaIndexes);
+    if (deletedIndexes.length > 0) {
+      mediaOrder = mediaOrder.filter(
+        (_, index) => !deletedIndexes.includes(index)
+      );
+    }
+
+    // ✅ 3. New uploads
     let newMedia = [];
     if (req.files && req.files.length > 0) {
       newMedia = req.files.map((file) => ({
@@ -130,13 +136,13 @@ router.put("/:id", upload.array("media", 10), async (req, res) => {
       }));
     }
 
-    // ✅ Merge old + new media
-    updateData.media = [...(existingProduct.media || []), ...newMedia];
+    // ✅ 4. FINAL media list (ORDER PRESERVED)
+    updateData.media = [...mediaOrder, ...newMedia];
 
-    // Update main image only if new image uploaded
-    const newImage = newMedia.find((m) => m.type === "image");
-    if (newImage) {
-      updateData.imageUrl = newImage.url;
+    // ✅ 5. Update main image from first image
+    const firstImage = updateData.media.find((m) => m.type === "image");
+    if (firstImage) {
+      updateData.imageUrl = firstImage.url;
     }
 
     const updatedProduct = await Product.findByIdAndUpdate(
