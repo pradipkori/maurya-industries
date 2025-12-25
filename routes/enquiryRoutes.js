@@ -1,45 +1,26 @@
 const express = require("express");
 const router = express.Router();
 const Enquiry = require("../models/Enquiry");
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 
 /* =========================
-   EMAIL TRANSPORTER (RENDER SAFE)
+   RESEND EMAIL CLIENT
 ========================= */
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false, // IMPORTANT for Render
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
-
-/* =========================
-   VERIFY EMAIL TRANSPORTER
-========================= */
-transporter.verify((error, success) => {
-  if (error) {
-    console.error("❌ Email transporter error:", error);
-  } else {
-    console.log("✅ Email transporter ready");
-  }
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 /* =========================
    POST ENQUIRY + EMAIL
 ========================= */
 router.post("/", async (req, res) => {
   try {
-    // 1️⃣ Save enquiry to DB
+    // 1️⃣ Save enquiry to DB (NO CHANGE)
     const enquiry = await Enquiry.create(req.body);
 
-    // 2️⃣ Send email notification
+    // 2️⃣ Send email notification (RENDER SAFE)
     try {
-      const info = await transporter.sendMail({
-        from: `"Maurya Industries Website" <${process.env.EMAIL_USER}>`,
-        to: process.env.EMAIL_USER,
+      await resend.emails.send({
+        from: "Maurya Industries <onboarding@resend.dev>",
+        to: ["pradipkorii2005@gmail.com"],
         subject: "📩 New Website Enquiry Received",
         html: `
           <h2>New Enquiry Received</h2>
@@ -52,12 +33,12 @@ router.post("/", async (req, res) => {
         `,
       });
 
-      console.log("✅ Email sent:", info.response);
-    } catch (mailError) {
-      console.error("❌ Email sending failed:", mailError);
+      console.log("✅ Email sent successfully");
+    } catch (emailError) {
+      console.error("❌ Email failed (Resend):", emailError);
     }
 
-    // 3️⃣ Respond success
+    // 3️⃣ Respond success (NO CHANGE)
     res.status(201).json({ success: true, enquiry });
   } catch (error) {
     console.error("❌ Enquiry save error:", error);
