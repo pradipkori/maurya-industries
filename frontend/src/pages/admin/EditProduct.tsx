@@ -57,6 +57,7 @@ export default function EditProduct() {
       .then((res) => res.json())
       .then((data) => {
         if (!data.success) return;
+
         const p = data.product;
 
         setForm({
@@ -75,9 +76,11 @@ export default function EditProduct() {
           features: p.features || [],
         });
 
-        if (p.media?.length) setExistingMedia(p.media);
-        else if (p.imageUrl)
+        if (p.media?.length) {
+          setExistingMedia(p.media);
+        } else if (p.imageUrl) {
           setExistingMedia([{ url: p.imageUrl, type: "image" }]);
+        }
 
         setYoutubeLinks(
           (p.youtubeVideos || []).map(
@@ -93,21 +96,10 @@ export default function EditProduct() {
 
   /* ================= HELPERS ================= */
   const extractYouTubeId = (url: string) => {
-    if (!url) return null;
-
-    const patterns = [
-      /youtube\.com\/watch\?v=([^&?/]+)/,
-      /youtu\.be\/([^&?/]+)/,
-      /youtube\.com\/shorts\/([^&?/]+)/, // ✅ Shorts
-      /youtube\.com\/embed\/([^&?/]+)/,
-    ];
-
-    for (const pattern of patterns) {
-      const match = url.match(pattern);
-      if (match && match[1]) return match[1];
-    }
-
-    return null;
+    const match = url.match(
+      /(?:youtube\.com\/.*v=|youtu\.be\/)([^&?/]+)/
+    );
+    return match ? match[1] : null;
   };
 
   const removeMedia = (index: number) => {
@@ -123,9 +115,11 @@ export default function EditProduct() {
 
   const onDrop = (index: number) => {
     if (dragIndex === null) return;
+
     const updated = [...existingMedia];
     const [moved] = updated.splice(dragIndex, 1);
     updated.splice(index, 0, moved);
+
     setExistingMedia(updated);
     setDragIndex(null);
   };
@@ -143,20 +137,16 @@ export default function EditProduct() {
     formData.append("specs", JSON.stringify(form.specs));
     formData.append("features", JSON.stringify(form.features));
 
-    // ✅ SAFE YOUTUBE SAVE (NO DISAPPEAR)
-    const youtubePayload = youtubeLinks
-      .map(extractYouTubeId)
-      .filter((id): id is string => Boolean(id))
-      .map((id) => ({ youtubeId: id }));
-
-    if (youtubeLinks.length > 0 && youtubePayload.length === 0) {
-      setToast("❌ Invalid YouTube / Shorts URL");
-      setSaving(false);
-      return;
-    }
-
-    if (youtubePayload.length > 0) {
-      formData.append("youtubeVideos", JSON.stringify(youtubePayload));
+    if (youtubeLinks.length) {
+      formData.append(
+        "youtubeVideos",
+        JSON.stringify(
+          youtubeLinks
+            .map(extractYouTubeId)
+            .filter(Boolean)
+            .map((id) => ({ youtubeId: id }))
+        )
+      );
     }
 
     formData.append(
@@ -164,6 +154,7 @@ export default function EditProduct() {
       JSON.stringify(deletedMediaIndexes)
     );
 
+    // SAVE MEDIA ORDER
     formData.append(
       "mediaOrder",
       JSON.stringify(existingMedia.map((_, i) => i))
@@ -234,35 +225,25 @@ export default function EditProduct() {
       <div className="max-w-5xl mx-auto p-10">
         <h1 className="text-3xl font-bold mb-8">Edit Product</h1>
 
-        {/* BASIC */}
-        <div className="grid md:grid-cols-3 gap-6">
-          <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-          <Input value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })} />
-          <Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
-        </div>
-
-        <Textarea
-          className="mt-4"
-          value={form.shortDesc}
-          onChange={(e) => setForm({ ...form, shortDesc: e.target.value })}
-        />
-
         {/* YOUTUBE */}
         <h3 className="font-semibold mt-8">YouTube Videos</h3>
+
         {youtubeLinks.map((link, i) => (
           <div key={i} className="flex gap-2 mt-2">
             <Input
               value={link}
-              onChange={(e) =>
-                setYoutubeLinks((prev) =>
-                  prev.map((v, idx) => (idx === i ? e.target.value : v))
-                )
-              }
+              onChange={(e) => {
+                const updated = [...youtubeLinks];
+                updated[i] = e.target.value;
+                setYoutubeLinks(updated);
+              }}
             />
             <Button
               variant="destructive"
               onClick={() =>
-                setYoutubeLinks((prev) => prev.filter((_, idx) => idx !== i))
+                setYoutubeLinks(
+                  youtubeLinks.filter((_, idx) => idx !== i)
+                )
               }
             >
               ✕
@@ -273,7 +254,7 @@ export default function EditProduct() {
         <Button
           className="mt-2"
           variant="outline"
-          onClick={() => setYoutubeLinks((prev) => [...prev, ""])}
+          onClick={() => setYoutubeLinks([...youtubeLinks, ""])}
         >
           + Add YouTube Video
         </Button>
