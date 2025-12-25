@@ -28,6 +28,8 @@ export default function EditProduct() {
   const [deletedMediaIndexes, setDeletedMediaIndexes] = useState<number[]>([]);
 
   const [youtubeLinks, setYoutubeLinks] = useState<string[]>([]);
+  const [youtubeTouched, setYoutubeTouched] = useState(false);
+
 
   const [brochureFile, setBrochureFile] = useState<File | null>(null);
   const [existingBrochure, setExistingBrochure] = useState<string | null>(null);
@@ -57,7 +59,6 @@ export default function EditProduct() {
       .then((res) => res.json())
       .then((data) => {
         if (!data.success) return;
-
         const p = data.product;
 
         setForm({
@@ -76,11 +77,9 @@ export default function EditProduct() {
           features: p.features || [],
         });
 
-        if (p.media?.length) {
-          setExistingMedia(p.media);
-        } else if (p.imageUrl) {
+        if (p.media?.length) setExistingMedia(p.media);
+        else if (p.imageUrl)
           setExistingMedia([{ url: p.imageUrl, type: "image" }]);
-        }
 
         setYoutubeLinks(
           (p.youtubeVideos || []).map(
@@ -88,6 +87,7 @@ export default function EditProduct() {
               `https://www.youtube.com/watch?v=${y.youtubeId}`
           )
         );
+        
 
         if (p.brochureUrl) setExistingBrochure(p.brochureUrl);
       })
@@ -96,11 +96,23 @@ export default function EditProduct() {
 
   /* ================= HELPERS ================= */
   const extractYouTubeId = (url: string) => {
-    const match = url.match(
-      /(?:youtube\.com\/.*v=|youtu\.be\/)([^&?/]+)/
-    );
-    return match ? match[1] : null;
-  };
+  if (!url) return null;
+
+  const patterns = [
+    /youtube\.com\/watch\?v=([^&?/]+)/,      // normal
+    /youtu\.be\/([^&?/]+)/,                  // short link
+    /youtube\.com\/shorts\/([^&?/]+)/,       // ✅ SHORTS
+    /youtube\.com\/embed\/([^&?/]+)/,
+  ];
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match && match[1]) return match[1];
+  }
+
+  return null;
+};
+
 
   const removeMedia = (index: number) => {
     setDeletingIndex(index);
@@ -115,11 +127,9 @@ export default function EditProduct() {
 
   const onDrop = (index: number) => {
     if (dragIndex === null) return;
-
     const updated = [...existingMedia];
     const [moved] = updated.splice(dragIndex, 1);
     updated.splice(index, 0, moved);
-
     setExistingMedia(updated);
     setDragIndex(null);
   };
@@ -137,24 +147,25 @@ export default function EditProduct() {
     formData.append("specs", JSON.stringify(form.specs));
     formData.append("features", JSON.stringify(form.features));
 
-    if (youtubeLinks.length) {
-      formData.append(
-        "youtubeVideos",
-        JSON.stringify(
-          youtubeLinks
-            .map(extractYouTubeId)
-            .filter(Boolean)
-            .map((id) => ({ youtubeId: id }))
-        )
-      );
-    }
+    if (youtubeTouched) {
+  formData.append(
+    "youtubeVideos",
+    JSON.stringify(
+      youtubeLinks
+        .map(extractYouTubeId)
+        .filter(Boolean)
+        .map((id) => ({ youtubeId: id }))
+    )
+  );
+}
+
 
     formData.append(
       "deletedMediaIndexes",
       JSON.stringify(deletedMediaIndexes)
     );
 
-    // SAVE MEDIA ORDER
+    // ✅ NEW: SAVE MEDIA ORDER
     formData.append(
       "mediaOrder",
       JSON.stringify(existingMedia.map((_, i) => i))
@@ -195,6 +206,7 @@ export default function EditProduct() {
   /* ================= UI ================= */
   return (
     <Layout>
+      {/* 🔄 SAVING OVERLAY */}
       {saving && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
           <div className="bg-white p-6 rounded-xl flex flex-col items-center gap-4">
@@ -204,6 +216,7 @@ export default function EditProduct() {
         </div>
       )}
 
+      {/* ✅ SUCCESS MODAL */}
       {showSuccessModal && (
         <div className="fixed inset-0 z-40 bg-black/50 flex items-center justify-center">
           <div className="bg-white p-8 rounded-xl text-center">
@@ -216,6 +229,7 @@ export default function EditProduct() {
         </div>
       )}
 
+      {/* 🔔 TOAST */}
       {toast && (
         <div className="fixed top-6 right-6 z-50 bg-black text-white px-4 py-3 rounded">
           {toast}
@@ -225,25 +239,144 @@ export default function EditProduct() {
       <div className="max-w-5xl mx-auto p-10">
         <h1 className="text-3xl font-bold mb-8">Edit Product</h1>
 
+        {/* BASIC */}
+        <div className="grid md:grid-cols-3 gap-6">
+          <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          <Input value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })} />
+          <Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
+        </div>
+
+        <Textarea
+          className="mt-4"
+          value={form.shortDesc}
+          onChange={(e) => setForm({ ...form, shortDesc: e.target.value })}
+        />
+
+        {/* TECH SPECS */}
+        <h3 className="font-semibold mt-8 mb-3">Technical Specifications</h3>
+        <div className="grid md:grid-cols-3 gap-4">
+          {Object.entries(form.specs).map(([key, value]) => (
+            <Input
+              key={key}
+              placeholder={key.replace(/([A-Z])/g, " $1")}
+              value={value}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  specs: { ...form.specs, [key]: e.target.value },
+                })
+              }
+            />
+          ))}
+        </div>
+
+        {/* MEDIA */}
+        <div className="mt-6">
+          <Input type="file" multiple accept="image/*,video/*"
+            onChange={(e) => setMediaFiles(Array.from(e.target.files || []))}
+          />
+
+          <p className="text-sm text-muted-foreground mt-2">
+            Drag images/videos to change display order
+          </p>
+
+          <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
+            {existingMedia.map((m, i) => (
+              <div
+                key={i}
+                draggable
+                onDragStart={() => onDragStart(i)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => onDrop(i)}
+                className={`relative cursor-move transition-all duration-300 ${
+                  deletingIndex === i ? "scale-95 opacity-0" : ""
+                }`}
+              >
+                {m.type === "image" ? (
+                  <img src={m.url} className="h-40 w-full object-cover rounded border" />
+                ) : (
+                  <video src={m.url} controls className="h-40 w-full rounded border" />
+                )}
+                <button
+                  onClick={() => removeMedia(i)}
+                  className="absolute top-2 right-2 bg-red-600 text-white rounded-full px-2"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* YOUTUBE */}
         <h3 className="font-semibold mt-8">YouTube Videos</h3>
-
         {youtubeLinks.map((link, i) => (
           <div key={i} className="flex gap-2 mt-2">
             <Input
-              value={link}
+  value={link}
+  onChange={(e) => {
+    const updated = [...youtubeLinks];
+    updated[i] = e.target.value;
+    setYoutubeLinks(updated);
+    setYoutubeTouched(true); // ✅ IMPORTANT
+  }}
+/>
+
+            <Button
+              variant="destructive"
+              onClick={() => {
+  setYoutubeLinks(youtubeLinks.filter((_, idx) => idx !== i));
+  setYoutubeTouched(true);
+}}
+
+            >
+              ✕
+            </Button>
+          </div>
+        ))}
+
+        <Button
+          className="mt-2"
+          variant="outline"
+          onClick={() => {
+  setYoutubeLinks([...youtubeLinks, ""]);
+  setYoutubeTouched(true);
+}}
+
+        >
+          + Add YouTube Video
+        </Button>
+
+        {/* BROCHURE */}
+        <h3 className="font-semibold mt-8">Brochure (PDF)</h3>
+        {existingBrochure && (
+          <a href={existingBrochure} target="_blank" className="block mb-2 text-blue-600 underline">
+            Download current brochure
+          </a>
+        )}
+        <Input type="file" accept="application/pdf"
+          onChange={(e) => setBrochureFile(e.target.files?.[0] || null)}
+        />
+
+        {/* FEATURES */}
+        <h3 className="font-semibold mt-8">Key Features</h3>
+        {form.features.map((f, i) => (
+          <div key={i} className="flex gap-2 mt-2">
+            <Input
+              value={f}
               onChange={(e) => {
-                const updated = [...youtubeLinks];
+                const updated = [...form.features];
                 updated[i] = e.target.value;
-                setYoutubeLinks(updated);
+                setForm({ ...form, features: updated });
               }}
             />
             <Button
               variant="destructive"
               onClick={() =>
-                setYoutubeLinks(
-                  youtubeLinks.filter((_, idx) => idx !== i)
-                )
+                setForm({
+                  ...form,
+                  features: form.features.filter((_, idx) => idx !== i),
+                })
               }
             >
               ✕
@@ -254,9 +387,9 @@ export default function EditProduct() {
         <Button
           className="mt-2"
           variant="outline"
-          onClick={() => setYoutubeLinks([...youtubeLinks, ""])}
+          onClick={() => setForm({ ...form, features: [...form.features, ""] })}
         >
-          + Add YouTube Video
+          + Add Feature
         </Button>
 
         <Button className="mt-8" onClick={saveProduct}>
