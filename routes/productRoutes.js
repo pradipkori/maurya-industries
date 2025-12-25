@@ -25,6 +25,8 @@ const parseObject = (value) => {
   }
 };
 
+
+
 const parseArray = (value) => {
   try {
     if (!value) return [];
@@ -35,39 +37,14 @@ const parseArray = (value) => {
   }
 };
 
-// =========================
-// ✅ YOUTUBE ID EXTRACTOR (VIDEOS + SHORTS)
-// =========================
-const extractYouTubeId = (url = "") => {
-  if (!url) return null;
-
-  // Shorts
-  if (url.includes("/shorts/")) {
-    return url.split("/shorts/")[1]?.split("?")[0];
-  }
-
-  // Normal YouTube
-  if (url.includes("watch?v=")) {
-    return url.split("watch?v=")[1]?.split("&")[0];
-  }
-
-  // youtu.be
-  if (url.includes("youtu.be/")) {
-    return url.split("youtu.be/")[1]?.split("?")[0];
-  }
-
-  return null;
-};
-
 const parseYoutubeVideos = (value) => {
-  const raw = parseArray(value);
-
-  return raw
-    .map((v) => {
-      const youtubeId = extractYouTubeId(v.youtubeId || v.url || v);
-      return youtubeId ? { youtubeId } : null;
-    })
-    .filter(Boolean);
+  try {
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+    return JSON.parse(value);
+  } catch {
+    return [];
+  }
 };
 
 // =========================
@@ -99,7 +76,6 @@ router.post("/", upload.array("media", 10), async (req, res) => {
       imageUrl: firstImage.url,
       media,
       youtubeVideos: parseYoutubeVideos(req.body.youtubeVideos),
-
       specs: parseObject(req.body.specs),
       features: parseArray(req.body.features),
     });
@@ -151,26 +127,18 @@ router.put(
         brochureUrl = req.files.brochure[0].path;
       }
 
-      const parsedYoutubeVideos = parseYoutubeVideos(req.body.youtubeVideos);
-
-const updateData = {
-  name: req.body.name,
-  model: req.body.model,
-  category: req.body.category,
-  shortDesc: req.body.shortDesc,
-  price: Number(req.body.price) || existingProduct.price,
-  specs: parseObject(req.body.specs),
-  features: parseArray(req.body.features),
-  media,
-  brochureUrl,
-};
-
-// ✅ ONLY overwrite if admin actually sent videos
-if (parsedYoutubeVideos.length > 0) {
-  updateData.youtubeVideos = parsedYoutubeVideos;
-} else {
-  updateData.youtubeVideos = existingProduct.youtubeVideos;
-}
+      const updateData = {
+        name: req.body.name,
+        model: req.body.model,
+        category: req.body.category,
+        shortDesc: req.body.shortDesc,
+        price: Number(req.body.price) || existingProduct.price,
+        specs: parseObject(req.body.specs),
+        features: parseArray(req.body.features),
+        youtubeVideos: parseYoutubeVideos(req.body.youtubeVideos),
+        media,
+        brochureUrl,
+      };
 
       // 🔥 UPDATE MAIN IMAGE FROM FIRST IMAGE
       const firstImage = media.find((m) => m.type === "image");
