@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Phone, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -17,9 +17,26 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
 
+  /* ================= AUTO CLOSE ON ROUTE CHANGE ================= */
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
+
+  /* ================= LOCK BODY SCROLL ON MOBILE ================= */
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
+
   return (
     <header className="fixed w-full z-50">
-      {/* Top Bar */}
+      {/* ================= TOP BAR ================= */}
       <div className="bg-primary text-primary-foreground py-2 hidden md:block">
         <div className="container-industrial flex justify-between items-center text-sm">
           <div className="flex items-center gap-6">
@@ -44,7 +61,7 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Main Navbar */}
+      {/* ================= MAIN NAVBAR ================= */}
       <nav className="bg-card/95 backdrop-blur-md shadow-md">
         <div className="container-industrial">
           <div className="flex items-center justify-between h-20">
@@ -74,7 +91,7 @@ export function Navbar() {
                 >
                   {item.name}
                   {location.pathname === item.href && (
-                    <motion.div 
+                    <motion.div
                       layoutId="navbar-indicator"
                       className="absolute -bottom-1 left-0 right-0 h-0.5 bg-secondary"
                     />
@@ -83,55 +100,69 @@ export function Navbar() {
               ))}
             </div>
 
-            {/* CTA Button */}
+            {/* CTA */}
             <div className="hidden lg:flex items-center gap-4">
               <Button variant="industrial" asChild>
                 <Link to="/contact">Get Quote</Link>
               </Button>
             </div>
 
-            {/* Mobile Menu Button */}
+            {/* Mobile Toggle */}
             <button
-              className="lg:hidden p-2 text-foreground"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-2 text-foreground z-50"
+              onClick={() => setMobileMenuOpen((prev) => !prev)}
+              aria-label="Toggle Menu"
             >
               {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* ================= MOBILE MENU ================= */}
         <AnimatePresence>
           {mobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="lg:hidden bg-card border-t border-border"
-            >
-              <div className="container-industrial py-4 space-y-2">
-                {navigation.map((item) => (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`block py-3 px-4 font-heading text-sm font-semibold uppercase tracking-wider rounded transition-colors
-                      ${location.pathname === item.href 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'text-foreground hover:bg-muted'
-                      }
-                    `}
-                  >
-                    {item.name}
-                  </Link>
-                ))}
-                <div className="pt-4">
-                  <Button variant="industrial" className="w-full" asChild>
-                    <Link to="/contact" onClick={() => setMobileMenuOpen(false)}>Get Quote</Link>
-                  </Button>
+            <>
+              {/* Overlay */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/40 z-40 lg:hidden"
+                onClick={() => setMobileMenuOpen(false)}
+              />
+
+              {/* Menu Panel */}
+              <motion.div
+                initial={{ y: -20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -20, opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="lg:hidden bg-card border-t border-border z-50 relative"
+              >
+                <div className="container-industrial py-4 space-y-2">
+                  {navigation.map((item) => (
+                    <Link
+                      key={item.name}
+                      to={item.href}
+                      className={`block py-3 px-4 font-heading text-sm font-semibold uppercase tracking-wider rounded transition-colors
+                        ${location.pathname === item.href 
+                          ? 'bg-primary text-primary-foreground' 
+                          : 'text-foreground hover:bg-muted'
+                        }
+                      `}
+                    >
+                      {item.name}
+                    </Link>
+                  ))}
+
+                  <div className="pt-4">
+                    <Button variant="industrial" className="w-full" asChild>
+                      <Link to="/contact">Get Quote</Link>
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
+              </motion.div>
+            </>
           )}
         </AnimatePresence>
       </nav>
