@@ -244,6 +244,12 @@ export default function Products() {
                 </div>
 
                 {/* DETAILS */}
+                {selectedProduct.model && (
+  <div className="text-sm font-semibold text-secondary uppercase tracking-wide mb-1">
+    {selectedProduct.model}
+  </div>
+)}
+
                 <div>
                   <h2 className="text-3xl font-bold mb-2">
                     {selectedProduct.name}
@@ -329,6 +335,12 @@ function ProductCard({ product }: { product: Product }) {
         <img src={image} className="w-full h-full object-cover" />
       </div>
       <div className="p-4">
+        {product.model && (
+  <div className="text-xs font-semibold text-secondary uppercase tracking-wide mb-1">
+    {product.model}
+  </div>
+)}
+
         <h3 className="font-bold">{product.name}</h3>
         <p className="text-sm text-muted-foreground line-clamp-2">
           {product.shortDesc}
