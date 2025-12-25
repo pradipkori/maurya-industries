@@ -20,7 +20,7 @@ router.post("/", async (req, res) => {
     try {
       await resend.emails.send({
         from: "Maurya Industries <onboarding@resend.dev>",
-        to: process.env.ENQUIRY_RECEIVER_EMAIL.split(","),
+        to: "pradipkorii2005@gmail.com",
         subject: "📩 New Website Enquiry Received",
         html: `
           <h2>New Enquiry Received</h2>
