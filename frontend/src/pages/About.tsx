@@ -39,9 +39,6 @@ export default function About() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <span className="text-secondary font-heading font-semibold text-sm uppercase tracking-wider">
-              About Us
-            </span>
             <h1 className="font-heading font-bold text-4xl md:text-5xl text-primary-foreground mt-2 mb-6">
               Engineering Excellence Since 2003
             </h1>
@@ -54,48 +51,45 @@ export default function About() {
 
       {/* Company Introduction */}
       <section className="section-padding bg-background">
-        <div className="container-industrial">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-            >
-              <h2 className="font-heading font-bold text-3xl md:text-4xl text-foreground mb-6">
-                Your Trusted Partner in Industrial Machinery
-              </h2>
-              <div className="space-y-4 text-muted-foreground">
-                <p>
-                  Maurya Industries is a premier manufacturer of Plastic Granulator Machines and industrial
-                  machinery, headquartered in Palghar, Maharashtra, India. Founded in 2003, we have grown
-                  to become one of the most trusted names in the plastic processing machinery industry.
-                </p>
-                <p>
-                  Our state-of-the-art manufacturing facility is equipped with modern machinery and skilled
-                  technicians who ensure every machine meets the highest standards of quality and performance.
-                </p>
-                <p>
-                  With a commitment to innovation and customer satisfaction, we continue to expand our
-                  product range and services to meet the evolving needs of the plastic recycling and
-                  processing industry.
-                </p>
-              </div>
-            </motion.div>
+  <div className="container-industrial">
+    <div className="max-w-4xl mx-auto text-center">
+      
+      {/* Eyebrow */}
+      <span className="inline-block text-secondary font-heading font-semibold text-sm uppercase tracking-wider mb-3">
+        About Us
+      </span>
 
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-            >
-              <img
-                src={factoryExterior}
-                alt="Maurya Industries Facility"
-                className="rounded-lg shadow-xl"
-              />
-            </motion.div>
-          </div>
-        </div>
-      </section>
+      {/* Heading */}
+      <h1 className="font-heading font-bold text-3xl md:text-4xl lg:text-5xl text-foreground leading-tight mb-6">
+        Your Trusted Partner in Industrial Machinery
+      </h1>
+
+      {/* Description */}
+      <div className="space-y-5 text-muted-foreground text-base md:text-lg leading-relaxed">
+        <p>
+          Maurya Industries is a premier manufacturer of Plastic Granulator Machines
+          and industrial machinery, Established in Palghar, Maharashtra, India.
+          Founded in 2003, we have grown into one of the most trusted names in the
+          plastic processing machinery industry.
+        </p>
+
+        <p>
+          Our state-of-the-art manufacturing facility, skilled workforce, and
+          industry-compliant processes ensure that every machine delivers consistent
+          performance, durability, and operational safety.
+        </p>
+
+        <p>
+          With a strong focus on quality, innovation, and customer satisfaction,
+          we continue to support manufacturers across India with reliable,
+          efficient, and future-ready machinery solutions.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
 
       {/* Vision & Mission */}
       <section className="section-padding bg-muted">

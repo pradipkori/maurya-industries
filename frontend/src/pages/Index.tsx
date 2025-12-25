@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -6,6 +7,27 @@ import heroImage from '@/assets/hero-industrial.jpg';
 import granulatorMachine from '@/assets/granulator-machine.jpg';
 import granulator3 from '@/assets/granulator-3.jpg';
 import factoryExterior from '@/assets/factory-exterior.jpg';
+
+function Counter({ value }: { value: number }) {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    let start = 0;
+    const duration = 1200;
+    const stepTime = Math.max(Math.floor(duration / value), 20);
+
+    const timer = setInterval(() => {
+      start += 1;
+      setCount(start);
+      if (start >= value) clearInterval(timer);
+    }, stepTime);
+
+    return () => clearInterval(timer);
+  }, [value]);
+
+  return <>{count}</>;
+}
+
 
 const highlights = [
   { icon: Shield, title: 'Quality', description: 'Premium materials and precision engineering' },
@@ -38,6 +60,7 @@ const featuredProducts = [
     power: '7.5 HP',
   },
 ];
+
 
 export default function Index() {
   return (
@@ -192,70 +215,128 @@ export default function Index() {
       </section>
 
       {/* About Section */}
-      <section className="section-padding bg-background">
-        <div className="container-industrial">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-            >
-              <span className="text-secondary font-heading font-semibold text-sm uppercase tracking-wider">About Us</span>
-              <h2 className="font-heading font-bold text-3xl md:text-4xl text-foreground mt-2 mb-6">
-                20+ Years of Excellence in Engineering
-              </h2>
-              <div className="space-y-4 text-muted-foreground">
-                <p>
-                  Maurya Industries is a leading manufacturer of Plastic Granulator Machines and industrial 
-                  machinery based in Palghar, Maharashtra. With over a decade of experience, we have established 
-                  ourselves as a trusted name in the industry.
-                </p>
-                <p>
-                  Our commitment to quality, innovation, and customer satisfaction has helped us serve 
-                  clients across India. We take pride in delivering robust, efficient, and reliable 
-                  machines that meet the highest standards of engineering excellence.
-                </p>
-              </div>
-              <div className="grid grid-cols-3 gap-6 mt-8">
-                <div>
-                  <div className="font-heading font-bold text-4xl text-primary">20+</div>
-                  <div className="text-sm text-muted-foreground">Years Experience</div>
-                </div>
-                <div>
-                  <div className="font-heading font-bold text-4xl text-primary">250+</div>
-                  <div className="text-sm text-muted-foreground">Products Delivered</div>
-                </div>
-                <div>
-                  <div className="font-heading font-bold text-4xl text-primary">200+</div>
-                  <div className="text-sm text-muted-foreground">Happy Clients</div>
-                </div>
-              </div>
-              <div className="mt-8">
-                <Button variant="industrial" asChild>
-                  <Link to="/about">Learn More About Us</Link>
-                </Button>
-              </div>
-            </motion.div>
+      <section className="relative section-padding overflow-hidden 
+  bg-gradient-to-b from-background via-background to-muted/30
+  dark:from-background dark:via-background dark:to-muted/10">
 
-            <motion.div
-              className="relative"
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-            >
-              <img 
-                src={factoryExterior} 
-                alt="Maurya Industries Factory"
-                className="rounded-lg shadow-xl"
-              />
-              <div className="absolute -bottom-6 -left-6 bg-secondary text-secondary-foreground p-6 rounded-lg shadow-lg">
-                <div className="font-heading font-bold text-3xl">ISO</div>
-                <div className="text-sm">Certified Company</div>
-              </div>
-            </motion.div>
+  {/* ENGINEERING SVG GRID */}
+  <svg
+    className="absolute inset-0 w-full h-full opacity-[0.03] pointer-events-none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <defs>
+      <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="1"/>
+      </pattern>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#grid)" />
+  </svg>
+
+  <div className="container-industrial relative z-10">
+
+    <motion.div
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-100px" }}
+      variants={{
+        hidden: {},
+        visible: { transition: { staggerChildren: 0.15 } },
+      }}
+      className="max-w-5xl mx-auto text-center"
+    >
+
+      {/* SINCE BADGE */}
+      <motion.div
+        variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+        className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full
+                   bg-primary/10 text-primary font-heading text-sm font-semibold
+                   uppercase tracking-wider mb-4"
+      >
+        Since 2003
+      </motion.div>
+
+      {/* TITLE */}
+      <motion.h2
+        variants={{ hidden: { opacity: 0, y: 25 }, visible: { opacity: 1, y: 0 } }}
+        className="font-heading font-bold text-4xl md:text-5xl text-foreground mb-6"
+      >
+        Engineering Excellence That Powers Industry
+      </motion.h2>
+
+      {/* DESCRIPTION */}
+      <motion.p
+        variants={{ hidden: { opacity: 0, y: 25 }, visible: { opacity: 1, y: 0 } }}
+        className="text-muted-foreground text-lg max-w-3xl mx-auto"
+      >
+        Maurya Industries is a trusted manufacturer of Plastic Granulator Machines
+        and industrial machinery. With decades of hands-on engineering expertise,
+        we deliver precision-built solutions that perform reliably in real-world
+        industrial environments.
+      </motion.p>
+
+      {/* STATS */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-10 mt-14 max-w-4xl mx-auto">
+        {[
+          { value: 20, label: "Years Experience" },
+          { value: 250, label: "Machines Delivered" },
+          { value: 200, label: "Satisfied Clients" },
+        ].map((item, i) => (
+          <motion.div
+            key={i}
+            variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0 } }}
+            className="text-center"
+          >
+            <div className="font-heading font-bold text-4xl text-primary">
+              <Counter value={item.value} />+
+            </div>
+            <div className="text-sm text-muted-foreground mt-1">
+              {item.label}
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* CERTIFICATIONS */}
+      <motion.div
+        variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0 } }}
+        className="flex flex-wrap justify-center gap-4 mt-14"
+      >
+        {[
+          "ISO 9001:2015 Certified",
+          "Quality Tested",
+          "Made in India",
+          "Industry Compliant",
+        ].map((badge, i) => (
+          <div
+            key={i}
+            className="px-4 py-2 rounded-md border border-border text-sm
+                       text-muted-foreground bg-background/60 backdrop-blur
+                       hover:text-primary hover:border-primary transition"
+          >
+            {badge}
           </div>
-        </div>
-      </section>
+        ))}
+      </motion.div>
+
+      {/* CTA */}
+      <motion.div
+        variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0 } }}
+        className="mt-16"
+      >
+        <Button variant="industrial" size="lg" asChild>
+          <Link to="/about">Learn More About Us</Link>
+        </Button>
+      </motion.div>
+    </motion.div>
+  </div>
+
+  {/* DIVIDER */}
+  <div className="absolute bottom-0 left-0 w-full h-px 
+                  bg-gradient-to-r from-transparent via-border to-transparent" />
+</section>
+
+
+
 
       {/* CTA Section */}
       <section className="bg-primary py-16">
