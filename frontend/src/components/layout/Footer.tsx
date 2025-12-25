@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { Phone, Mail, MapPin, Facebook, Linkedin, Twitter, Instagram } from 'lucide-react';
+import { Phone, Mail, MapPin, Facebook, Youtube, Instagram } from 'lucide-react';
+
 
 const navigation = {
   company: [
@@ -45,20 +46,38 @@ export function Footer() {
               Committed to excellence in engineering for over 20 years.
             </p>
 
-            <div className="flex gap-4">
-              <a href="#" className="w-10 h-10 rounded bg-primary-foreground/10 flex items-center justify-center hover:bg-secondary transition-colors">
-                <Facebook className="h-5 w-5" />
-              </a>
-              <a href="#" className="w-10 h-10 rounded bg-primary-foreground/10 flex items-center justify-center hover:bg-secondary transition-colors">
-                <Linkedin className="h-5 w-5" />
-              </a>
-              <a href="#" className="w-10 h-10 rounded bg-primary-foreground/10 flex items-center justify-center hover:bg-secondary transition-colors">
-                <Twitter className="h-5 w-5" />
-              </a>
-              <a href="#" className="w-10 h-10 rounded bg-primary-foreground/10 flex items-center justify-center hover:bg-secondary transition-colors">
-                <Instagram className="h-5 w-5" />
-              </a>
-            </div>
+           <div className="flex gap-4">
+  {/* Facebook */}
+  <a
+    href="https://www.facebook.com/share/1aSUsTgZYv/"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="w-10 h-10 rounded bg-primary-foreground/10 flex items-center justify-center hover:bg-secondary transition-colors"
+  >
+    <Facebook className="h-5 w-5" />
+  </a>
+
+  {/* Instagram */}
+  <a
+    href="https://www.instagram.com/maurya_industries?igsh=cHR5MDRjZm1sNGs5"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="w-10 h-10 rounded bg-primary-foreground/10 flex items-center justify-center hover:bg-secondary transition-colors"
+  >
+    <Instagram className="h-5 w-5" />
+  </a>
+
+  {/* YouTube */}
+  <a
+    href="https://www.youtube.com/@mauryaindustries440"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="w-10 h-10 rounded bg-primary-foreground/10 flex items-center justify-center hover:bg-secondary transition-colors"
+  >
+    <Youtube className="h-5 w-5" />
+  </a>
+</div>
+
           </div>
 
           {/* Quick Links */}

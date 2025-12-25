@@ -46,7 +46,7 @@ export default function Achievements() {
             { label: "Years of Experience", value: "20+" },
             { label: "Exhibitions Attended", value: "15+" },
             { label: "Industry Segments", value: "10+" },
-            { label: "Trusted Clients", value: "500+" },
+            { label: "Trusted Clients", value: "200+" },
           ].map((stat, i) => (
             <motion.div
               key={i}

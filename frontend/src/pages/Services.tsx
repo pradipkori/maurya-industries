@@ -177,7 +177,7 @@ export default function Services() {
                 {[
                   '20+ years of industry experience',
                   'ISO certified manufacturing processes',
-                  '500+ machines delivered across India',
+                  '250+ machines delivered across India',
                   'Dedicated after-sales support team',
                   'Competitive pricing and flexible payment options',
                 ].map((item) => (
@@ -197,7 +197,7 @@ export default function Services() {
             >
               {[
                 { value: '20+', label: 'Years Experience' },
-                { value: '500+', label: 'Machines Delivered' },
+                { value: '250+', label: 'Machines Delivered' },
                 { value: '200+', label: 'Happy Clients' },
                 { value: '24/7', label: 'Support' },
               ].map((stat) => (

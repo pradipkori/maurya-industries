@@ -222,7 +222,7 @@ export default function Index() {
                   <div className="text-sm text-muted-foreground">Years Experience</div>
                 </div>
                 <div>
-                  <div className="font-heading font-bold text-4xl text-primary">500+</div>
+                  <div className="font-heading font-bold text-4xl text-primary">250+</div>
                   <div className="text-sm text-muted-foreground">Products Delivered</div>
                 </div>
                 <div>

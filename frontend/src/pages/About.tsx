@@ -255,6 +255,6 @@ export default function About() {
 const _toggleStats = [
   { value: '20+', label: 'Years Experience' },
   { value: '250+', label: 'Machines Delivered' },
-  { value: '250+', label: 'Happy Clients' },
+  { value: '200+', label: 'Happy Clients' },
   { value: '24/7', label: 'Support Available' },
 ];
