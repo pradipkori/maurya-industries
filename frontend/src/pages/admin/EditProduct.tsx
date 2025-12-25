@@ -28,7 +28,7 @@ export default function EditProduct() {
   const [deletedMediaIndexes, setDeletedMediaIndexes] = useState<number[]>([]);
 
   const [youtubeLinks, setYoutubeLinks] = useState<string[]>([]);
-  const [youtubeTouched, setYoutubeTouched] = useState(false);
+
 
 
   const [brochureFile, setBrochureFile] = useState<File | null>(null);
@@ -87,7 +87,7 @@ export default function EditProduct() {
               `https://www.youtube.com/watch?v=${y.youtubeId}`
           )
         );
-        setYoutubeTouched(false); // ✅ user has NOT edited yet
+        
 
 
         if (p.brochureUrl) setExistingBrochure(p.brochureUrl);
@@ -148,17 +148,16 @@ export default function EditProduct() {
     formData.append("specs", JSON.stringify(form.specs));
     formData.append("features", JSON.stringify(form.features));
 
-    if (youtubeTouched) {
-  formData.append(
-    "youtubeVideos",
-    JSON.stringify(
-      youtubeLinks
-        .map(extractYouTubeId)
-        .filter(Boolean)
-        .map((id) => ({ youtubeId: id }))
-    )
-  );
-}
+   formData.append(
+  "youtubeVideos",
+  JSON.stringify(
+    youtubeLinks
+      .map(extractYouTubeId)
+      .filter(Boolean)
+      .map((id) => ({ youtubeId: id }))
+  )
+);
+
 
 
     formData.append(
@@ -319,7 +318,7 @@ export default function EditProduct() {
     const updated = [...youtubeLinks];
     updated[i] = e.target.value;
     setYoutubeLinks(updated);
-    setYoutubeTouched(true); // ✅ IMPORTANT
+    
   }}
 />
 
@@ -327,7 +326,7 @@ export default function EditProduct() {
               variant="destructive"
               onClick={() => {
   setYoutubeLinks(youtubeLinks.filter((_, idx) => idx !== i));
-  setYoutubeTouched(true);
+  
 }}
 
             >
@@ -337,14 +336,13 @@ export default function EditProduct() {
         ))}
 
         <Button
-          className="mt-2"
-          variant="outline"
-          onClick={() => {
-  setYoutubeLinks([...youtubeLinks, ""]);
-  setYoutubeTouched(true);
-}}
+  className="mt-2"
+  variant="outline"
+  onClick={() => setYoutubeLinks((prev) => [...prev, ""])}
+>
 
-        >
+
+        
           + Add YouTube Video
         </Button>
 
@@ -372,16 +370,14 @@ export default function EditProduct() {
               }}
             />
             <Button
-              variant="destructive"
-              onClick={() =>
-                setForm({
-                  ...form,
-                  features: form.features.filter((_, idx) => idx !== i),
-                })
-              }
-            >
-              ✕
-            </Button>
+  variant="destructive"
+  onClick={() => {
+    setYoutubeLinks((prev) => prev.filter((_, idx) => idx !== i));
+  }}
+>
+  ✕
+</Button>
+
           </div>
         ))}
 
