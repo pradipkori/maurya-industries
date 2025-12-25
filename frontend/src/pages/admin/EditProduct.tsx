@@ -28,6 +28,8 @@ export default function EditProduct() {
   const [deletedMediaIndexes, setDeletedMediaIndexes] = useState<number[]>([]);
 
   const [youtubeLinks, setYoutubeLinks] = useState<string[]>([]);
+  const [youtubeTouched, setYoutubeTouched] = useState(false);
+
 
   const [brochureFile, setBrochureFile] = useState<File | null>(null);
   const [existingBrochure, setExistingBrochure] = useState<string | null>(null);
@@ -85,6 +87,8 @@ export default function EditProduct() {
               `https://www.youtube.com/watch?v=${y.youtubeId}`
           )
         );
+        setYoutubeTouched(false); // ✅ user has NOT edited yet
+
 
         if (p.brochureUrl) setExistingBrochure(p.brochureUrl);
       })
@@ -93,11 +97,23 @@ export default function EditProduct() {
 
   /* ================= HELPERS ================= */
   const extractYouTubeId = (url: string) => {
-    const match = url.match(
-      /(?:youtube\.com\/.*v=|youtu\.be\/)([^&?/]+)/
-    );
-    return match ? match[1] : null;
-  };
+  if (!url) return null;
+
+  const patterns = [
+    /youtube\.com\/watch\?v=([^&?/]+)/,      // normal
+    /youtu\.be\/([^&?/]+)/,                  // short link
+    /youtube\.com\/shorts\/([^&?/]+)/,       // ✅ SHORTS
+    /youtube\.com\/embed\/([^&?/]+)/,
+  ];
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match && match[1]) return match[1];
+  }
+
+  return null;
+};
+
 
   const removeMedia = (index: number) => {
     setDeletingIndex(index);
@@ -132,15 +148,18 @@ export default function EditProduct() {
     formData.append("specs", JSON.stringify(form.specs));
     formData.append("features", JSON.stringify(form.features));
 
-    formData.append(
-      "youtubeVideos",
-      JSON.stringify(
-        youtubeLinks
-          .map(extractYouTubeId)
-          .filter(Boolean)
-          .map((id) => ({ youtubeId: id }))
-      )
-    );
+    if (youtubeTouched) {
+  formData.append(
+    "youtubeVideos",
+    JSON.stringify(
+      youtubeLinks
+        .map(extractYouTubeId)
+        .filter(Boolean)
+        .map((id) => ({ youtubeId: id }))
+    )
+  );
+}
+
 
     formData.append(
       "deletedMediaIndexes",
@@ -295,18 +314,22 @@ export default function EditProduct() {
         {youtubeLinks.map((link, i) => (
           <div key={i} className="flex gap-2 mt-2">
             <Input
-              value={link}
-              onChange={(e) => {
-                const updated = [...youtubeLinks];
-                updated[i] = e.target.value;
-                setYoutubeLinks(updated);
-              }}
-            />
+  value={link}
+  onChange={(e) => {
+    const updated = [...youtubeLinks];
+    updated[i] = e.target.value;
+    setYoutubeLinks(updated);
+    setYoutubeTouched(true); // ✅ IMPORTANT
+  }}
+/>
+
             <Button
               variant="destructive"
-              onClick={() =>
-                setYoutubeLinks(youtubeLinks.filter((_, idx) => idx !== i))
-              }
+              onClick={() => {
+  setYoutubeLinks(youtubeLinks.filter((_, idx) => idx !== i));
+  setYoutubeTouched(true);
+}}
+
             >
               ✕
             </Button>
@@ -316,7 +339,11 @@ export default function EditProduct() {
         <Button
           className="mt-2"
           variant="outline"
-          onClick={() => setYoutubeLinks([...youtubeLinks, ""])}
+          onClick={() => {
+  setYoutubeLinks([...youtubeLinks, ""]);
+  setYoutubeTouched(true);
+}}
+
         >
           + Add YouTube Video
         </Button>

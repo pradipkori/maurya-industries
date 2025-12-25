@@ -151,19 +151,26 @@ router.put(
         brochureUrl = req.files.brochure[0].path;
       }
 
-      const updateData = {
-        name: req.body.name,
-        model: req.body.model,
-        category: req.body.category,
-        shortDesc: req.body.shortDesc,
-        price: Number(req.body.price) || existingProduct.price,
-        specs: parseObject(req.body.specs),
-        features: parseArray(req.body.features),
-        youtubeVideos: parseYoutubeVideos(req.body.youtubeVideos),
+      const parsedYoutubeVideos = parseYoutubeVideos(req.body.youtubeVideos);
 
-        media,
-        brochureUrl,
-      };
+const updateData = {
+  name: req.body.name,
+  model: req.body.model,
+  category: req.body.category,
+  shortDesc: req.body.shortDesc,
+  price: Number(req.body.price) || existingProduct.price,
+  specs: parseObject(req.body.specs),
+  features: parseArray(req.body.features),
+  media,
+  brochureUrl,
+};
+
+// ✅ ONLY overwrite if admin actually sent videos
+if (parsedYoutubeVideos.length > 0) {
+  updateData.youtubeVideos = parsedYoutubeVideos;
+} else {
+  updateData.youtubeVideos = existingProduct.youtubeVideos;
+}
 
       // 🔥 UPDATE MAIN IMAGE FROM FIRST IMAGE
       const firstImage = media.find((m) => m.type === "image");
