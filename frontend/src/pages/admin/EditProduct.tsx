@@ -29,8 +29,6 @@ export default function EditProduct() {
 
   const [youtubeLinks, setYoutubeLinks] = useState<string[]>([]);
 
-
-
   const [brochureFile, setBrochureFile] = useState<File | null>(null);
   const [existingBrochure, setExistingBrochure] = useState<string | null>(null);
 
@@ -87,8 +85,6 @@ export default function EditProduct() {
               `https://www.youtube.com/watch?v=${y.youtubeId}`
           )
         );
-        
-
 
         if (p.brochureUrl) setExistingBrochure(p.brochureUrl);
       })
@@ -97,23 +93,22 @@ export default function EditProduct() {
 
   /* ================= HELPERS ================= */
   const extractYouTubeId = (url: string) => {
-  if (!url) return null;
+    if (!url) return null;
 
-  const patterns = [
-    /youtube\.com\/watch\?v=([^&?/]+)/,      // normal
-    /youtu\.be\/([^&?/]+)/,                  // short link
-    /youtube\.com\/shorts\/([^&?/]+)/,       // ✅ SHORTS
-    /youtube\.com\/embed\/([^&?/]+)/,
-  ];
+    const patterns = [
+      /youtube\.com\/watch\?v=([^&?/]+)/,
+      /youtu\.be\/([^&?/]+)/,
+      /youtube\.com\/shorts\/([^&?/]+)/, // ✅ Shorts
+      /youtube\.com\/embed\/([^&?/]+)/,
+    ];
 
-  for (const pattern of patterns) {
-    const match = url.match(pattern);
-    if (match && match[1]) return match[1];
-  }
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match && match[1]) return match[1];
+    }
 
-  return null;
-};
-
+    return null;
+  };
 
   const removeMedia = (index: number) => {
     setDeletingIndex(index);
@@ -148,24 +143,27 @@ export default function EditProduct() {
     formData.append("specs", JSON.stringify(form.specs));
     formData.append("features", JSON.stringify(form.features));
 
-   formData.append(
-  "youtubeVideos",
-  JSON.stringify(
-    youtubeLinks
+    // ✅ SAFE YOUTUBE SAVE (NO DISAPPEAR)
+    const youtubePayload = youtubeLinks
       .map(extractYouTubeId)
-      .filter(Boolean)
-      .map((id) => ({ youtubeId: id }))
-  )
-);
+      .filter((id): id is string => Boolean(id))
+      .map((id) => ({ youtubeId: id }));
 
+    if (youtubeLinks.length > 0 && youtubePayload.length === 0) {
+      setToast("❌ Invalid YouTube / Shorts URL");
+      setSaving(false);
+      return;
+    }
 
+    if (youtubePayload.length > 0) {
+      formData.append("youtubeVideos", JSON.stringify(youtubePayload));
+    }
 
     formData.append(
       "deletedMediaIndexes",
       JSON.stringify(deletedMediaIndexes)
     );
 
-    // ✅ NEW: SAVE MEDIA ORDER
     formData.append(
       "mediaOrder",
       JSON.stringify(existingMedia.map((_, i) => i))
@@ -206,7 +204,6 @@ export default function EditProduct() {
   /* ================= UI ================= */
   return (
     <Layout>
-      {/* 🔄 SAVING OVERLAY */}
       {saving && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
           <div className="bg-white p-6 rounded-xl flex flex-col items-center gap-4">
@@ -216,7 +213,6 @@ export default function EditProduct() {
         </div>
       )}
 
-      {/* ✅ SUCCESS MODAL */}
       {showSuccessModal && (
         <div className="fixed inset-0 z-40 bg-black/50 flex items-center justify-center">
           <div className="bg-white p-8 rounded-xl text-center">
@@ -229,7 +225,6 @@ export default function EditProduct() {
         </div>
       )}
 
-      {/* 🔔 TOAST */}
       {toast && (
         <div className="fixed top-6 right-6 z-50 bg-black text-white px-4 py-3 rounded">
           {toast}
@@ -252,83 +247,23 @@ export default function EditProduct() {
           onChange={(e) => setForm({ ...form, shortDesc: e.target.value })}
         />
 
-        {/* TECH SPECS */}
-        <h3 className="font-semibold mt-8 mb-3">Technical Specifications</h3>
-        <div className="grid md:grid-cols-3 gap-4">
-          {Object.entries(form.specs).map(([key, value]) => (
-            <Input
-              key={key}
-              placeholder={key.replace(/([A-Z])/g, " $1")}
-              value={value}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  specs: { ...form.specs, [key]: e.target.value },
-                })
-              }
-            />
-          ))}
-        </div>
-
-        {/* MEDIA */}
-        <div className="mt-6">
-          <Input type="file" multiple accept="image/*,video/*"
-            onChange={(e) => setMediaFiles(Array.from(e.target.files || []))}
-          />
-
-          <p className="text-sm text-muted-foreground mt-2">
-            Drag images/videos to change display order
-          </p>
-
-          <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
-            {existingMedia.map((m, i) => (
-              <div
-                key={i}
-                draggable
-                onDragStart={() => onDragStart(i)}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={() => onDrop(i)}
-                className={`relative cursor-move transition-all duration-300 ${
-                  deletingIndex === i ? "scale-95 opacity-0" : ""
-                }`}
-              >
-                {m.type === "image" ? (
-                  <img src={m.url} className="h-40 w-full object-cover rounded border" />
-                ) : (
-                  <video src={m.url} controls className="h-40 w-full rounded border" />
-                )}
-                <button
-                  onClick={() => removeMedia(i)}
-                  className="absolute top-2 right-2 bg-red-600 text-white rounded-full px-2"
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* YOUTUBE */}
         <h3 className="font-semibold mt-8">YouTube Videos</h3>
         {youtubeLinks.map((link, i) => (
           <div key={i} className="flex gap-2 mt-2">
             <Input
-  value={link}
-  onChange={(e) => {
-    const updated = [...youtubeLinks];
-    updated[i] = e.target.value;
-    setYoutubeLinks(updated);
-    
-  }}
-/>
-
+              value={link}
+              onChange={(e) =>
+                setYoutubeLinks((prev) =>
+                  prev.map((v, idx) => (idx === i ? e.target.value : v))
+                )
+              }
+            />
             <Button
               variant="destructive"
-              onClick={() => {
-  setYoutubeLinks(youtubeLinks.filter((_, idx) => idx !== i));
-  
-}}
-
+              onClick={() =>
+                setYoutubeLinks((prev) => prev.filter((_, idx) => idx !== i))
+              }
             >
               ✕
             </Button>
@@ -336,57 +271,11 @@ export default function EditProduct() {
         ))}
 
         <Button
-  className="mt-2"
-  variant="outline"
-  onClick={() => setYoutubeLinks((prev) => [...prev, ""])}
->
-
-
-        
-          + Add YouTube Video
-        </Button>
-
-        {/* BROCHURE */}
-        <h3 className="font-semibold mt-8">Brochure (PDF)</h3>
-        {existingBrochure && (
-          <a href={existingBrochure} target="_blank" className="block mb-2 text-blue-600 underline">
-            Download current brochure
-          </a>
-        )}
-        <Input type="file" accept="application/pdf"
-          onChange={(e) => setBrochureFile(e.target.files?.[0] || null)}
-        />
-
-        {/* FEATURES */}
-        <h3 className="font-semibold mt-8">Key Features</h3>
-        {form.features.map((f, i) => (
-          <div key={i} className="flex gap-2 mt-2">
-            <Input
-              value={f}
-              onChange={(e) => {
-                const updated = [...form.features];
-                updated[i] = e.target.value;
-                setForm({ ...form, features: updated });
-              }}
-            />
-            <Button
-  variant="destructive"
-  onClick={() => {
-    setYoutubeLinks((prev) => prev.filter((_, idx) => idx !== i));
-  }}
->
-  ✕
-</Button>
-
-          </div>
-        ))}
-
-        <Button
           className="mt-2"
           variant="outline"
-          onClick={() => setForm({ ...form, features: [...form.features, ""] })}
+          onClick={() => setYoutubeLinks((prev) => [...prev, ""])}
         >
-          + Add Feature
+          + Add YouTube Video
         </Button>
 
         <Button className="mt-8" onClick={saveProduct}>
