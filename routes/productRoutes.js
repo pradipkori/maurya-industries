@@ -35,14 +35,39 @@ const parseArray = (value) => {
   }
 };
 
-const parseYoutubeVideos = (value) => {
-  try {
-    if (!value) return [];
-    if (Array.isArray(value)) return value;
-    return JSON.parse(value);
-  } catch {
-    return [];
+// =========================
+// ✅ YOUTUBE ID EXTRACTOR (VIDEOS + SHORTS)
+// =========================
+const extractYouTubeId = (url = "") => {
+  if (!url) return null;
+
+  // Shorts
+  if (url.includes("/shorts/")) {
+    return url.split("/shorts/")[1]?.split("?")[0];
   }
+
+  // Normal YouTube
+  if (url.includes("watch?v=")) {
+    return url.split("watch?v=")[1]?.split("&")[0];
+  }
+
+  // youtu.be
+  if (url.includes("youtu.be/")) {
+    return url.split("youtu.be/")[1]?.split("?")[0];
+  }
+
+  return null;
+};
+
+const parseYoutubeVideos = (value) => {
+  const raw = parseArray(value);
+
+  return raw
+    .map((v) => {
+      const youtubeId = extractYouTubeId(v.youtubeId || v.url || v);
+      return youtubeId ? { youtubeId } : null;
+    })
+    .filter(Boolean);
 };
 
 // =========================
@@ -74,6 +99,7 @@ router.post("/", upload.array("media", 10), async (req, res) => {
       imageUrl: firstImage.url,
       media,
       youtubeVideos: parseYoutubeVideos(req.body.youtubeVideos),
+
       specs: parseObject(req.body.specs),
       features: parseArray(req.body.features),
     });
@@ -134,6 +160,7 @@ router.put(
         specs: parseObject(req.body.specs),
         features: parseArray(req.body.features),
         youtubeVideos: parseYoutubeVideos(req.body.youtubeVideos),
+
         media,
         brochureUrl,
       };
