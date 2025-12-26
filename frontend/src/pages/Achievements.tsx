@@ -375,7 +375,7 @@ export default function Achievements() {
               </motion.button>
 
               {/* MODAL IMAGE WITH GRADIENT */}
-              <div className="relative h-80 sm:h-96 overflow-hidden bg-slate-100">
+              <div className="relative h-90 sm:h-85 overflow-hidden bg-slate-100">
                 <img
                   src={selected.image}
                   alt={selected.title}
