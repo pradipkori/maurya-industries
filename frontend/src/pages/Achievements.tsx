@@ -266,8 +266,8 @@ export default function Achievements() {
                     <div className="relative h-48 md:h-52
  overflow-hidden bg-slate-100">
                       <motion.img
-                        whileHover={{ scale: 1.1 }}
-                        transition={{ duration: 0.6 }}
+                        whileHover={{ scale: 1.03 }}
+                        transition={{ duration: 0.35, ease: "easeOut" }}
                         src={item.image}
                         alt={item.title}
                         className="w-full h-full object-contain"
