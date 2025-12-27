@@ -343,94 +343,133 @@ export default function EditProduct() {
             </div>
           </div>
 
+          
           {/* MEDIA SECTION */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 mb-6">
-            <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center">
-              <div className="w-2 h-8 bg-green-600 rounded-full mr-3" />
-              Media Gallery
-            </h2>
+<div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 mb-6">
+  <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center">
+    <div className="w-2 h-8 bg-green-600 rounded-full mr-3" />
+    Media Gallery
+  </h2>
 
-            <div className="mb-6">
-              <label className="flex items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 rounded-xl cursor-pointer bg-slate-50 hover:bg-slate-100 transition-colors group">
-                <div className="flex flex-col items-center">
-                  <Upload className="w-10 h-10 text-slate-400 group-hover:text-green-600 transition-colors mb-2" />
-                  <span className="text-sm font-medium text-slate-600 group-hover:text-green-600 transition-colors">
-                    Click to upload images or videos
-                  </span>
-                  <span className="text-xs text-slate-500 mt-1">PNG, JPG, MP4, WebM</span>
-                </div>
-                <Input 
-                  type="file" 
-                  multiple 
-                  accept="image/*,video/*"
-                  onChange={(e) => setMediaFiles(Array.from(e.target.files || []))}
-                  className="hidden"
+  {/* UPLOAD BOX */}
+  <div className="mb-6">
+    <label className="flex items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 rounded-xl cursor-pointer bg-slate-50 hover:bg-slate-100 transition-colors group">
+      <div className="flex flex-col items-center">
+        <Upload className="w-10 h-10 text-slate-400 group-hover:text-green-600 transition-colors mb-2" />
+        <span className="text-sm font-medium text-slate-600 group-hover:text-green-600 transition-colors">
+          Click to upload images or videos
+        </span>
+        <span className="text-xs text-slate-500 mt-1">
+          PNG, JPG, MP4, WebM
+        </span>
+      </div>
+
+      <Input
+        type="file"
+        multiple
+        accept="image/*,video/*"
+        onChange={(e) =>
+          setMediaFiles(Array.from(e.target.files || []))
+        }
+        className="hidden"
+      />
+    </label>
+  </div>
+
+  {/* EXISTING MEDIA (FROM DB) */}
+  {existingMedia.length > 0 && (
+    <>
+      <div className="flex items-center gap-2 mb-4 text-sm text-slate-600 bg-blue-50 px-4 py-2 rounded-lg">
+        <GripVertical className="w-4 h-4" />
+        <span>Drag items to reorder display</span>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {existingMedia.map((m, i) => (
+          <div
+            key={i}
+            draggable
+            onDragStart={() => onDragStart(i)}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={() => onDrop(i)}
+            className={`group relative cursor-move rounded-xl overflow-hidden border-2 border-slate-200 hover:border-green-400 transition-all duration-300 ${
+              deletingIndex === i
+                ? "scale-90 opacity-0"
+                : "hover:shadow-lg"
+            } ${dragIndex === i ? "opacity-50 scale-95" : ""}`}
+          >
+            <div className="aspect-square bg-slate-100">
+              {m.type === "image" ? (
+                <img
+                  src={m.url}
+                  className="w-full h-full object-cover"
+                  alt=""
                 />
-              </label>
+              ) : (
+                <video
+                  src={m.url}
+                  controls
+                  className="w-full h-full object-cover"
+                />
+              )}
             </div>
 
-            {existingMedia.length > 0 && (
-              <>
-                <div className="flex items-center gap-2 mb-4 text-sm text-slate-600 bg-blue-50 px-4 py-2 rounded-lg">
-                  <GripVertical className="w-4 h-4" />
-                  <span>Drag items to reorder display</span>
-                </div>
-
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {existingMedia.map((m, i) => (
-                    <div
-                      key={i}
-                      draggable
-                      onDragStart={() => onDragStart(i)}
-                      onDragOver={(e) => e.preventDefault()}
-                      onDrop={() => onDrop(i)}
-                      className={`group relative cursor-move rounded-xl overflow-hidden border-2 border-slate-200 hover:border-green-400 transition-all duration-300 ${
-                        deletingIndex === i ? "scale-90 opacity-0" : "hover:shadow-lg"
-                      } ${dragIndex === i ? "opacity-50 scale-95" : ""}`}
-                    >
-                      <div className="aspect-square bg-slate-100">
-                        {m.type === "image" ? (
-                          <>
-                            <img 
-                              src={m.url} 
-                              className="w-full h-full object-cover" 
-                              alt=""
-                            />
-                            <div className="absolute top-2 left-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-medium text-slate-700">
-                              📷 Image
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <video 
-                              src={m.url} 
-                              controls 
-                              className="w-full h-full object-cover" 
-                            />
-                            <div className="absolute top-2 left-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-medium text-slate-700 flex items-center gap-1">
-                              <Video className="w-3 h-3" />
-                              Video
-                            </div>
-                          </>
-                        )}
-                      </div>
-                      
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <GripVertical className="w-8 h-8 text-white" />
-                      </div>
-
-                      <button
-                        onClick={() => removeMedia(i)}
-                        className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-lg p-2 shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
+            <button
+              onClick={() => removeMedia(i)}
+              className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-lg p-2 shadow-lg opacity-0 group-hover:opacity-100 transition-all"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
+        ))}
+      </div>
+    </>
+  )}
+
+  {/* 🔵 NEWLY SELECTED MEDIA (LOCAL PREVIEW) */}
+  {mediaFiles.length > 0 && (
+    <div className="mt-8">
+      <p className="text-sm font-semibold text-slate-600 mb-3">
+        Newly Selected Media (will upload on save)
+      </p>
+
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {mediaFiles.map((file, i) => {
+          const isVideo = file.type.startsWith("video");
+          const previewUrl = URL.createObjectURL(file);
+
+          return (
+            <div
+              key={i}
+              className="relative rounded-xl overflow-hidden border-2 border-dashed border-green-400 bg-green-50"
+            >
+              <div className="aspect-square">
+                {isVideo ? (
+                  <video
+                    src={previewUrl}
+                    className="w-full h-full object-cover"
+                    muted
+                  />
+                ) : (
+                  <img
+                    src={previewUrl}
+                    className="w-full h-full object-cover"
+                    alt=""
+                  />
+                )}
+              </div>
+
+              <div className="absolute top-2 left-2 bg-white/90 px-2 py-1 rounded text-xs font-medium">
+                New
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  )}
+</div>
+
 
           {/* YOUTUBE SECTION */}
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 mb-6">
