@@ -105,11 +105,13 @@ router.put(
 
       let media = [...(existingProduct.media || [])];
 
-      // 🔥 DELETE MEDIA BY INDEX
-      const deletedIndexes = parseArray(req.body.deletedMediaIndexes);
-      if (deletedIndexes.length) {
-        media = media.filter((_, i) => !deletedIndexes.includes(i));
-      }
+      // 🔥 DELETE MEDIA BY URL (FIXED)
+const deletedMediaUrls = parseArray(req.body.deletedMediaUrls);
+if (deletedMediaUrls.length) {
+  media = media.filter(
+    (m) => !deletedMediaUrls.includes(m.url)
+  );
+}
 
       // 🔥 ADD NEW MEDIA
       if (req.files?.media?.length) {

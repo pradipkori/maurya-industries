@@ -26,10 +26,11 @@ export default function EditProduct() {
 
   const [existingMedia, setExistingMedia] = useState<MediaItem[]>([]);
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
-  const [deletedMediaIndexes, setDeletedMediaIndexes] = useState<number[]>([]);
+  const [deletedMediaUrls, setDeletedMediaUrls] = useState<string[]>([]);
+
 
   const [youtubeLinks, setYoutubeLinks] = useState<string[]>([]);
-  const [youtubeTouched, setYoutubeTouched] = useState(false);
+
 
 
   const [brochureFile, setBrochureFile] = useState<File | null>(null);
@@ -118,13 +119,16 @@ export default function EditProduct() {
 
 
   const removeMedia = (index: number) => {
-    setDeletingIndex(index);
-    setTimeout(() => {
-      setDeletedMediaIndexes((prev) => [...prev, index]);
-      setExistingMedia((prev) => prev.filter((_, i) => i !== index));
-      setDeletingIndex(null);
-    }, 300);
-  };
+  const mediaUrl = existingMedia[index].url;
+
+  setDeletingIndex(index);
+  setTimeout(() => {
+    setDeletedMediaUrls((prev) => [...prev, mediaUrl]);
+    setExistingMedia((prev) => prev.filter((_, i) => i !== index));
+    setDeletingIndex(null);
+  }, 300);
+};
+
 
   const onDragStart = (index: number) => setDragIndex(index);
 
@@ -165,23 +169,23 @@ const onNewDrop = (index: number) => {
     formData.append("specs", JSON.stringify(form.specs));
     formData.append("features", JSON.stringify(form.features));
 
-    if (youtubeTouched) {
-  formData.append(
-    "youtubeVideos",
-    JSON.stringify(
-      youtubeLinks
-        .map(extractYouTubeId)
-        .filter(Boolean)
-        .map((id) => ({ youtubeId: id }))
-    )
-  );
-}
+   formData.append(
+  "youtubeVideos",
+  JSON.stringify(
+    youtubeLinks
+      .map(extractYouTubeId)
+      .filter(Boolean)
+      .map((id) => ({ youtubeId: id }))
+  )
+);
+
 
 
     formData.append(
-      "deletedMediaIndexes",
-      JSON.stringify(deletedMediaIndexes)
-    );
+  "deletedMediaUrls",
+  JSON.stringify(deletedMediaUrls)
+);
+
 
     // ✅ NEW: SAVE MEDIA ORDER
     formData.append(
@@ -536,7 +540,7 @@ const onNewDrop = (index: number) => {
                         const updated = [...youtubeLinks];
                         updated[i] = e.target.value;
                         setYoutubeLinks(updated);
-                        setYoutubeTouched(true);
+                        
                       }}
                       className="h-12 pl-11"
                       placeholder="https://www.youtube.com/watch?v=..."
@@ -547,7 +551,7 @@ const onNewDrop = (index: number) => {
                     size="lg"
                     onClick={() => {
                       setYoutubeLinks(youtubeLinks.filter((_, idx) => idx !== i));
-                      setYoutubeTouched(true);
+                      
                     }}
                   >
                     <X className="w-5 h-5" />
@@ -562,7 +566,7 @@ const onNewDrop = (index: number) => {
               size="lg"
               onClick={() => {
                 setYoutubeLinks([...youtubeLinks, ""]);
-                setYoutubeTouched(true);
+                
               }}
             >
               <Plus className="w-5 h-5 mr-2" />
