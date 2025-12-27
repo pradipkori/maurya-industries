@@ -37,6 +37,8 @@ export default function EditProduct() {
 
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [deletingIndex, setDeletingIndex] = useState<number | null>(null);
+  const [newDragIndex, setNewDragIndex] = useState<number | null>(null);
+
 
   const [form, setForm] = useState({
     name: "",
@@ -134,6 +136,21 @@ export default function EditProduct() {
     setExistingMedia(updated);
     setDragIndex(null);
   };
+  const onNewDragStart = (index: number) => setNewDragIndex(index);
+
+const onNewDrop = (index: number) => {
+  if (newDragIndex === null) return;
+
+  setMediaFiles((prev) => {
+    const updated = [...prev];
+    const [moved] = updated.splice(newDragIndex, 1);
+    updated.splice(index, 0, moved);
+    return updated;
+  });
+
+  setNewDragIndex(null);
+};
+
 
   /* ================= SAVE ================= */
   const saveProduct = async () => {
@@ -429,11 +446,11 @@ export default function EditProduct() {
     </>
   )}
 
-  {/* 🔵 NEWLY SELECTED MEDIA (LOCAL PREVIEW) */}
-  {mediaFiles.length > 0 && (
+  {/* 🔵 NEWLY SELECTED MEDIA (LOCAL PREVIEW + DRAG REORDER) */}
+{mediaFiles.length > 0 && (
   <div className="mt-8">
     <p className="text-sm font-semibold text-slate-600 mb-3">
-      Newly Selected Media (will upload on save)
+      Newly Selected Media (drag to reorder before upload)
     </p>
 
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -444,7 +461,15 @@ export default function EditProduct() {
         return (
           <div
             key={i}
-            className="group relative rounded-xl overflow-hidden border-2 border-dashed border-green-400 bg-green-50"
+            draggable
+            onDragStart={() => onNewDragStart(i)}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={() => onNewDrop(i)}
+            className={`group relative cursor-move rounded-xl overflow-hidden border-2 border-dashed border-green-400 bg-green-50 transition-all ${
+              newDragIndex === i
+                ? "opacity-50 scale-95"
+                : "hover:shadow-lg"
+            }`}
           >
             <div className="aspect-square">
               {isVideo ? (
@@ -462,9 +487,14 @@ export default function EditProduct() {
               )}
             </div>
 
-            {/* NEW LABEL */}
+            {/* LABEL */}
             <div className="absolute top-2 left-2 bg-white/90 px-2 py-1 rounded text-xs font-medium">
               New
+            </div>
+
+            {/* DRAG OVERLAY */}
+            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <GripVertical className="w-8 h-8 text-white" />
             </div>
 
             {/* REMOVE BUTTON */}
@@ -483,6 +513,7 @@ export default function EditProduct() {
     </div>
   </div>
 )}
+
 
 </div>
 
