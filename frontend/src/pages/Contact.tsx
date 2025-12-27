@@ -107,7 +107,7 @@ export default function Contact() {
               Get in Touch
             </h1>
             <p className="text-xl text-primary-foreground/80 max-w-2xl">
-              For quotations, product details, or technical support.
+              Whether you need a quote, technical support, or just want to chat about your next project — we're here for you.
             </p>
           </motion.div>
         </div>
