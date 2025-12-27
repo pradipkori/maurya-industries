@@ -368,9 +368,12 @@ export default function EditProduct() {
         type="file"
         multiple
         accept="image/*,video/*"
-        onChange={(e) =>
-          setMediaFiles(Array.from(e.target.files || []))
-        }
+        onChange={(e) => {
+  const files = Array.from(e.target.files || []);
+  setMediaFiles((prev) => [...prev, ...files]);
+  e.target.value = ""; // allow re-selecting same file
+}}
+
         className="hidden"
       />
     </label>
@@ -428,46 +431,59 @@ export default function EditProduct() {
 
   {/* 🔵 NEWLY SELECTED MEDIA (LOCAL PREVIEW) */}
   {mediaFiles.length > 0 && (
-    <div className="mt-8">
-      <p className="text-sm font-semibold text-slate-600 mb-3">
-        Newly Selected Media (will upload on save)
-      </p>
+  <div className="mt-8">
+    <p className="text-sm font-semibold text-slate-600 mb-3">
+      Newly Selected Media (will upload on save)
+    </p>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {mediaFiles.map((file, i) => {
-          const isVideo = file.type.startsWith("video");
-          const previewUrl = URL.createObjectURL(file);
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      {mediaFiles.map((file, i) => {
+        const isVideo = file.type.startsWith("video");
+        const previewUrl = URL.createObjectURL(file);
 
-          return (
-            <div
-              key={i}
-              className="relative rounded-xl overflow-hidden border-2 border-dashed border-green-400 bg-green-50"
-            >
-              <div className="aspect-square">
-                {isVideo ? (
-                  <video
-                    src={previewUrl}
-                    className="w-full h-full object-cover"
-                    muted
-                  />
-                ) : (
-                  <img
-                    src={previewUrl}
-                    className="w-full h-full object-cover"
-                    alt=""
-                  />
-                )}
-              </div>
-
-              <div className="absolute top-2 left-2 bg-white/90 px-2 py-1 rounded text-xs font-medium">
-                New
-              </div>
+        return (
+          <div
+            key={i}
+            className="group relative rounded-xl overflow-hidden border-2 border-dashed border-green-400 bg-green-50"
+          >
+            <div className="aspect-square">
+              {isVideo ? (
+                <video
+                  src={previewUrl}
+                  className="w-full h-full object-cover"
+                  muted
+                />
+              ) : (
+                <img
+                  src={previewUrl}
+                  className="w-full h-full object-cover"
+                  alt=""
+                />
+              )}
             </div>
-          );
-        })}
-      </div>
+
+            {/* NEW LABEL */}
+            <div className="absolute top-2 left-2 bg-white/90 px-2 py-1 rounded text-xs font-medium">
+              New
+            </div>
+
+            {/* REMOVE BUTTON */}
+            <button
+              type="button"
+              onClick={() =>
+                setMediaFiles((prev) => prev.filter((_, idx) => idx !== i))
+              }
+              className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-lg p-2 shadow-lg opacity-0 group-hover:opacity-100 transition-all"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        );
+      })}
     </div>
-  )}
+  </div>
+)}
+
 </div>
 
 
