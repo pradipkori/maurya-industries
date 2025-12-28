@@ -36,7 +36,7 @@ const highlights = [
 
 const featuredProducts = [
   {
-  id: 1,
+   _id: "6943ff39652754d939dbbb0",
   name: 'Plastic Scrap Grinder Machine',
   image: scrapGrinder,
   capacity: '300 Kg / Hour',
@@ -45,7 +45,7 @@ const featuredProducts = [
 },
 
   {
-    id: 2,
+    _id: "6944e5055da6faf4ba4a2814",
     name: 'Plastic Dewatering Machine',
     image: 'https://5.imimg.com/data5/SELLER/Default/2023/1/QC/FU/HJ/47305699/plastic-dewatering-machine-500x500.jpg',
     capacity: '500 KG Per Hour',
@@ -53,7 +53,7 @@ const featuredProducts = [
     badge: 'Best Seller'
   },
   {
-  id: 3,
+  _id: "6943fd2ec2ca5f0a1aa77b7d",
   name: 'Colour Mixing Machine',
   image: colourMixingMachine,
   capacity: '50–300 Kg / Batch',
@@ -389,7 +389,7 @@ export default function Index() {
           <div className="grid md:grid-cols-3 gap-8">
             {featuredProducts.map((product, index) => (
               <motion.div
-                key={product.id}
+                key={product._id}
                 className="group relative"
                 initial={{ opacity: 0, y: 50, rotateY: -20 }}
                 whileInView={{ opacity: 1, y: 0, rotateY: 0 }}
@@ -472,7 +472,11 @@ export default function Index() {
                     </div>
 
                     <motion.button
-  onClick={() => navigate("/products")}
+  onClick={() =>
+    navigate("/products", {
+      state: { productId: product._id },
+    })
+  }
   className="w-full px-4 py-3 bg-gradient-to-r from-slate-900 to-slate-700 text-white rounded-xl font-semibold flex items-center justify-center gap-2"
   whileHover={{
     scale: 1.02,
