@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { ChevronRight, Phone, Play, Download } from "lucide-react";
 
 /* ================= TYPES ================= */
@@ -36,6 +36,7 @@ const SPEC_ICONS: Record<string, string> = {
 };
 
 export default function Products() {
+  const location = useLocation();
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "detailed">("grid");
@@ -45,16 +46,34 @@ export default function Products() {
   const thumbRef = useRef<HTMLDivElement>(null);
 
   /* ================= FETCH ================= */
-  useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/api/products`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          setProducts(data.products);
-          setSelectedProduct(data.products[0]);
+ useEffect(() => {
+  fetch(`${import.meta.env.VITE_API_URL}/api/products`)
+    .then((res) => res.json())
+    .then((data) => {
+      if (!data.success) return;
+
+      setProducts(data.products);
+
+      // ✅ STEP 4: Check if we came from Home page
+      const productIdFromHome = location.state?.productId;
+
+      if (productIdFromHome) {
+        const foundProduct = data.products.find(
+          (p: Product) => p._id === productIdFromHome
+        );
+
+        if (foundProduct) {
+          setSelectedProduct(foundProduct);
+          setViewMode("detailed");
+          setActiveIndex(0);
+          return;
         }
-      });
-  }, []);
+      }
+
+      // 🔁 Normal behaviour (when user directly opens /products)
+      setSelectedProduct(data.products[0]);
+    });
+}, [location.state]);
 
   const categories = ["All", ...new Set(products.map((p) => p.category))];
   const filteredProducts =

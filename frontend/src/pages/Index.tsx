@@ -216,9 +216,16 @@ export default function Index() {
               transition={{ delay: 1 }}
             >
               <motion.button
-  onClick={() => navigate("/products")}
-  className="group relative overflow-hidden bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-2xl shadow-blue-500/50"
-  whileHover={{ scale: 1.05, boxShadow: '0 20px 40px rgba(59, 130, 246, 0.4)' }}
+  onClick={() =>
+    navigate("/products", {
+      state: { productId: "6943ff39652754d939dbbb0" },
+    })
+  }
+  className="group relative overflow-hidden bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-8 py-4 rounded-xl font-semibold"
+  whileHover={{
+    scale: 1.05,
+    boxShadow: "0 20px 40px rgba(59,130,246,0.4)",
+  }}
   whileTap={{ scale: 0.95 }}
 >
   <span className="relative z-10 flex items-center">
@@ -230,6 +237,7 @@ export default function Index() {
       <ChevronRight className="ml-2" />
     </motion.div>
   </span>
+
   <motion.div
     className="absolute inset-0 bg-gradient-to-r from-cyan-600 to-blue-600"
     initial={{ x: "-100%" }}
