@@ -36,14 +36,13 @@ const highlights = [
 
 const featuredProducts = [
   {
-   _id: "6943ff39652754d939dbbb0",
-  name: 'Plastic Scrap Grinder Machine',
-  image: scrapGrinder,
-  capacity: '300 Kg / Hour',
-  power: '20 HP',
-  badge: 'Heavy Duty'
-},
-
+    _id: "6943ff39652754d939dbbb0",  // Must match your MongoDB exactly
+    name: 'Plastic Scrap Grinder Machine',
+    image: scrapGrinder,
+    capacity: '300 Kg / Hour',
+    power: '20 HP',
+    badge: 'Heavy Duty'
+  },
   {
     _id: "6944e5055da6faf4ba4a2814",
     name: 'Plastic Dewatering Machine',
@@ -53,16 +52,14 @@ const featuredProducts = [
     badge: 'Best Seller'
   },
   {
-  _id: "6943fd2ec2ca5f0a1aa77b7d",
-  name: 'Colour Mixing Machine',
-  image: colourMixingMachine,
-  capacity: '50–300 Kg / Batch',
-  power: '3 HP',
-  badge: 'Featured'
-}
-
+    _id: "6943fd2ec2ca5f0a1aa77b7d",
+    name: 'Colour Mixing Machine',
+    image: colourMixingMachine,
+    capacity: '50–300 Kg / Batch',
+    power: '3 HP',
+    badge: 'Featured'
+  }
 ];
-
 const features = [
   { icon: Factory, title: 'State-of-the-Art Facility', description: 'Large-scale manufacturing facility' },
   { icon: Cog, title: 'Expert Engineering', description: 'Team of 10+ skilled engineers' },
@@ -215,10 +212,11 @@ export default function Index() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1 }}
             >
-              <motion.button
+              
+  <motion.button
   onClick={() =>
     navigate("/products", {
-      state: { productId: "6943ff39652754d939dbbb0" },
+      state: { productId: featuredProducts[0]._id },
     })
   }
   className="group relative overflow-hidden bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-8 py-4 rounded-xl font-semibold"
