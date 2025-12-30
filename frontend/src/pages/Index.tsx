@@ -36,20 +36,20 @@ const highlights = [
 
 const featuredProducts = [
   {
-    _id: "6943ff39652754d939dbbb0",  // Must match your MongoDB exactly
-    name: 'Plastic Scrap Grinder Machine',
-    image: scrapGrinder,
-    capacity: '300 Kg / Hour',
-    power: '20 HP',
-    badge: 'Heavy Duty'
-  },
-  {
     _id: "6944e5055da6faf4ba4a2814",
     name: 'Plastic Dewatering Machine',
     image: 'https://5.imimg.com/data5/SELLER/Default/2023/1/QC/FU/HJ/47305699/plastic-dewatering-machine-500x500.jpg',
     capacity: '500 KG Per Hour',
     power: '7.5 HP',
     badge: 'Best Seller'
+    },
+  {
+    _id: "6943ff39652754d939dbbb0",  // Must match your MongoDB exactly
+    name: 'Plastic Scrap Grinder Machine',
+    image: scrapGrinder,
+    capacity: '300 Kg / Hour',
+    power: '20 HP',
+    badge: 'Heavy Duty'
   },
   {
     _id: "6943fd2ec2ca5f0a1aa77b7d",
@@ -60,6 +60,7 @@ const featuredProducts = [
     badge: 'Featured'
   }
 ];
+
 const features = [
   { icon: Factory, title: 'State-of-the-Art Facility', description: 'Large-scale manufacturing facility' },
   { icon: Cog, title: 'Expert Engineering', description: 'Team of 10+ skilled engineers' },
