@@ -14,6 +14,8 @@ app.use(
       "http://localhost:8080",
       "http://localhost:5173",
       "https://maurya-industries-1.onrender.com",
+       "https://maurya-industries.com",
+      "https://www.maurya-industries.com"
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
