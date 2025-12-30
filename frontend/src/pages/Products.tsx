@@ -44,8 +44,9 @@ export default function Products() {
 
   /* ================= FETCH WITH YOUR REAL API ================= */
   useEffect(() => {
-    // Get API URL from environment variable (works in React apps)
-    const API_URL = import.meta?.env?.VITE_API_URL || "https://your-api-url.com";
+  const API_URL =
+    import.meta.env.VITE_API_URL ||
+    "https://maurya-industries-backend.onrender.com";
     
     fetch(`${API_URL}/api/products`)
       .then((res) => res.json())
