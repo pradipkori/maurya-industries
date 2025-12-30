@@ -165,37 +165,23 @@ export default function Index() {
               </span>
             </motion.div>
             
-            <motion.h1 
-              className="font-bold text-5xl md:text-6xl lg:text-7xl leading-[1.1] mb-8"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-            >
-              <motion.span 
-                className="block bg-gradient-to-r from-white via-blue-100 to-cyan-200 bg-clip-text text-transparent"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.6 }}
-              >
-                We Provide Best,
-              </motion.span>
-              <motion.span 
-                className="block bg-gradient-to-r from-cyan-200 via-blue-200 to-white bg-clip-text text-transparent mt-2"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.7 }}
-              >
-                Innovative & Quality
-              </motion.span>
-              <motion.span 
-                className="block text-white mt-2"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.8 }}
-              >
-                Engineering
-              </motion.span>
-            </motion.h1>
+            <motion.h1
+  className="font-bold text-5xl md:text-6xl lg:text-7xl leading-[1.1] mb-8"
+  initial={{ opacity: 0, y: 30 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 0.4 }}
+>
+  Plastic Granulator Machine Manufacturer in India
+</motion.h1>
+<motion.h2
+  className="text-xl md:text-2xl text-gray-300 max-w-3xl"
+  initial={{ opacity: 0 }}
+  animate={{ opacity: 1 }}
+  transition={{ delay: 0.6 }}
+>
+  Leading manufacturer of plastic recycling machines and industrial machinery based in Palghar, Maharashtra.
+</motion.h2>
+
             
             <motion.p 
               className="text-xl md:text-2xl text-slate-300 mb-10 leading-relaxed max-w-2xl"
