@@ -19,7 +19,8 @@ router.post("/", async (req, res) => {
     // 2️⃣ Send email notification (RENDER SAFE)
     try {
       await resend.emails.send({
-        from: "Maurya Industries <onboarding@resend.dev>",
+        from: "Maurya Industries <no-reply@mail.maurya-industries.com>",
+
         to: "mauryaindustries1978@gmail.com",
           
         subject: "📩 New Website Enquiry Received",
