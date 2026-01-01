@@ -19,7 +19,7 @@ export default function AddProduct() {
     name: "",
     model: "",
     category: "",
-    price: "",
+    
     shortDesc: "",
     specs: {
       bladeLength: "",
@@ -85,7 +85,7 @@ export default function AddProduct() {
     formData.append("name", form.name);
     formData.append("model", form.model);
     formData.append("category", form.category);
-    formData.append("price", form.price);
+
     formData.append("shortDesc", form.shortDesc);
     formData.append("specs", JSON.stringify(form.specs));
     formData.append("features", JSON.stringify(form.features));
@@ -174,7 +174,7 @@ export default function AddProduct() {
               <Input name="name" placeholder="Product Name" onChange={handleChange} required />
               <Input name="model" placeholder="Model" onChange={handleChange} required />
               <Input name="category" placeholder="Category" onChange={handleChange} required />
-              <Input name="price" type="number" placeholder="Price (₹)" onChange={handleChange} required />
+              
             </div>
 
             <Textarea
