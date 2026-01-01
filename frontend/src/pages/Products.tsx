@@ -19,7 +19,7 @@ interface Product {
   imageUrl?: string;
   media?: { url: string; type: "image" | "video" }[];
   youtubeVideos?: { youtubeId: string }[];
-  price?: number;
+  
   specs?: Record<string, string>;
   features?: string[];
 }
@@ -413,14 +413,8 @@ export default function Products() {
                         {selectedProduct.name}
                       </h2>
 
-                      {selectedProduct.price && (
-                        <div className="inline-flex items-baseline gap-3 bg-gradient-to-r from-orange-100 via-red-50 to-transparent px-6 py-4 rounded-2xl border-2 border-orange-300 mb-6">
-                          <span className="text-5xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
-                            ₹{selectedProduct.price.toLocaleString("en-IN")}
-                          </span>
-                          <span className="text-sm text-slate-600 font-semibold">+ GST</span>
-                        </div>
-                      )}
+                      
+              
 
                       <p className="text-lg text-slate-600 leading-relaxed">
                         {selectedProduct.shortDesc}
@@ -518,13 +512,10 @@ function ProductCard({ product }: { product: Product }) {
         
         <div className="absolute inset-0 bg-gradient-to-t from-orange-900/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
         
-        {product.price && (
-          <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg border-2 border-orange-300 group-hover:scale-110 transition-transform">
-            <span className="text-orange-700 font-bold text-sm">
-              ₹{product.price.toLocaleString("en-IN")}
-            </span>
-          </div>
-        )}
+       
+          
+           
+      
 
         <div className="absolute bottom-4 left-0 right-0 flex justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-4 group-hover:translate-y-0">
           <div className="bg-white/95 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg border-2 border-orange-300 flex items-center gap-2">
