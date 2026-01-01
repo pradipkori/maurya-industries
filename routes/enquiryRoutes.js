@@ -20,7 +20,8 @@ router.post("/", async (req, res) => {
     try {
       await resend.emails.send({
         from: "Maurya Industries <onboarding@resend.dev>",
-        to: "pradipkorii2005@gmail.com",
+        to: "mauryaindustries1978@gmail.com",
+          
         subject: "📩 New Website Enquiry Received",
         html: `
           <h2>New Enquiry Received</h2>
