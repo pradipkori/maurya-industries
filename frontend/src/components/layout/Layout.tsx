@@ -2,6 +2,9 @@ import ScrollToTop from "./ScrollToTop";
 import { ReactNode } from "react";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
+import WhatsAppButton from "../WhatsAppButton";
+
+
 
 interface LayoutProps {
   children: ReactNode;
@@ -23,6 +26,9 @@ export function Layout({ children }: LayoutProps) {
 
       {/* Footer */}
       <Footer />
+            {/* Floating WhatsApp Button */}
+      <WhatsAppButton />
+
     </div>
   );
 }
