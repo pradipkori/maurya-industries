@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import Logo from '@/assets/Logo.png';
 import { Phone, Mail, MapPin, Facebook, Youtube, Instagram } from 'lucide-react';
 
 
@@ -31,22 +32,17 @@ export function Footer() {
           
           {/* Company Info */}
           <div>
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 bg-secondary rounded flex items-center justify-center">
-                <span className="text-secondary-foreground font-heading font-bold text-xl">MI</span>
-              </div>
-              <div>
-                <h3 className="font-heading font-bold text-lg">MAURYA</h3>
-                <p className="text-xs text-primary-foreground/70 uppercase tracking-wider">Industries</p>
-              </div>
-            </div>
+  <div className="flex flex-col gap-3 mb-6">
+    
+    <p className="text-sm font-semibold text-primary-foreground uppercase tracking-wider">MAURYA INDUSTRIES</p>
+  </div>
+  
+  <p className="text-primary-foreground/80 mb-6 leading-relaxed">
+    Leading manufacturer of high-quality Plastic Granulator Machines and industrial machinery. 
+    Committed to excellence in engineering for over 20 years.
+  </p>
 
-            <p className="text-primary-foreground/80 mb-6 leading-relaxed">
-              Leading manufacturer of high-quality Plastic Granulator Machines and industrial machinery. 
-              Committed to excellence in engineering for over 20 years.
-            </p>
-
-           <div className="flex gap-4">
+  <div className="flex gap-4">
   {/* Facebook */}
   <a
     href="https://www.facebook.com/share/1aSUsTgZYv/"

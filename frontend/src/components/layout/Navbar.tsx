@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Phone, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
+import Logo from '@/assets/Logo.png';
 
 const navigation = [
   { name: 'Home', href: '/' },
@@ -66,16 +67,9 @@ export function Navbar() {
         <div className="container-industrial">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-primary rounded flex items-center justify-center">
-                <span className="text-primary-foreground font-heading font-bold text-xl">MI</span>
-              </div>
-              <div className="hidden sm:block">
-                <h1 className="font-heading font-bold text-lg text-foreground leading-tight">MAURYA</h1>
-                <p className="text-xs text-muted-foreground uppercase tracking-wider">Industries</p>
-              </div>
-            </Link>
-
+           <Link to="/" className="flex items-center">
+  <img src={Logo} alt="Maurya Industries Logo" className="h-40 w-auto rounded" />
+</Link>
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center gap-8">
               {navigation.map((item) => (
