@@ -266,7 +266,7 @@ export default function Index() {
               {[
                 { icon: TrendingUp, text: '20+ Years Experience', color: 'text-cyan-400' },
                 { icon: Users, text: '200+ Happy Clients', color: 'text-blue-400' },
-                { icon: Award, text: 'ISO Certified', color: 'text-purple-400' },
+                
               ].map((item, i) => (
                 <motion.div 
                   key={i}
@@ -687,7 +687,7 @@ export default function Index() {
               className="flex flex-wrap justify-center gap-3 mt-16"
             >
               {[
-                "ISO 9001:2015 Certified",
+                
                 "Quality Tested",
                 "Made in India",
                 "Industry Compliant",
